@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/prometheus/alertmanager/config"
+	"github.com/prometheus/alertmanager/pkg/labels"
 	"net/url"
 	"path/filepath"
 	"sync"
@@ -417,6 +419,108 @@ func (am *Alertmanager) buildReceiverIntegrations(receiver *apimodels.PostableAp
 	}
 
 	return integrations, nil
+}
+
+func migrateFrom7xTo8x() (*apimodels.PostableApiAlertingConfig, error) {
+	allChannelsQuery := models.GetAllAlertNotificationsQuery{}
+	if err := sqlstore.GetAllAlertNotifications(&allChannelsQuery); err != nil {
+		return nil, err
+	}
+
+	if len(allChannelsQuery.Result) == 0 {
+		// TODO: verify if this means nothing to migrate.
+		return nil, nil
+	}
+
+	allChannels := make(map[string]*models.AlertNotification)
+	var defaultChannel *models.AlertNotification
+	for _, c := range allChannelsQuery.Result {
+		allChannels[c.Name] = c
+		if c.IsDefault {
+			// TODO: verify that there will be only 1 default channel.
+			defaultChannel = c
+		}
+	}
+
+	amConfig := &apimodels.PostableApiAlertingConfig{
+		Config: apimodels.Config{
+			Route: nil,
+		},
+		Receivers: nil,
+	}
+
+	if defaultChannel == nil {
+		// TODO: can we do better than this?
+		defaultChannel = allChannelsQuery.Result[0]
+	}
+
+	// Migration for the default route.
+	recv, route, err := migrateRuleFrom7xTo8x("default_route", []string{defaultChannel.Name}, allChannels)
+	if err != nil {
+		return nil, err
+	}
+
+	amConfig.Receivers = append(amConfig.Receivers, recv)
+	amConfig.Config.Route = route
+
+	// TODO: iterate over all the old rules.
+	// for _, r := range allRules {
+	ruleUID := "r.UID"
+	channelNames := []string{"r.Channels[0]", "r.Channels[1]", "..."}
+
+	recv, route, err = migrateRuleFrom7xTo8x(ruleUID, channelNames, allChannels)
+	if err != nil {
+		return nil, err
+	}
+	amConfig.Receivers = append(amConfig.Receivers, recv)
+	amConfig.Config.Route.Routes = append(amConfig.Config.Route.Routes, route)
+	// }
+
+	return amConfig, nil
+}
+
+func migrateRuleFrom7xTo8x(ruleUID string, channelNames []string, allChannels map[string]*models.AlertNotification) (*apimodels.PostableApiReceiver, *config.Route, error) {
+	receiverName := getMigratedRuleNameFromRuleUID(ruleUID)
+
+	portedChannels := []*apimodels.PostableGrafanaReceiver{}
+	receiver := &apimodels.PostableApiReceiver{
+		Receiver: config.Receiver{
+			Name: receiverName,
+		},
+	}
+
+	for _, n := range channelNames {
+		m, ok := allChannels[n]
+		if !ok {
+			// TODO: should we error out here?
+			continue
+		}
+		portedChannels = append(portedChannels, &apimodels.PostableGrafanaReceiver{
+			Uid:                   "", // TODO: Generate something?
+			Name:                  m.Name,
+			Type:                  m.Type,
+			DisableResolveMessage: m.DisableResolveMessage,
+			Settings:              m.Settings,
+			SecureSettings:        m.SecureSettings.Decrypt(), // TODO: encrypt this before saving.
+			OrgId:                 m.OrgId,
+		})
+	}
+	receiver.PostableGrafanaReceivers.GrafanaManagedReceivers = portedChannels
+
+	m, err := labels.NewMatcher(labels.MatchEqual, "_panel_id_", ruleUID)
+	if err != nil {
+		return nil, nil, err
+	}
+	route := &config.Route{
+		Receiver: receiverName,
+		Matchers: config.Matchers{m},
+	}
+
+	return receiver, route, nil
+}
+
+func getMigratedRuleNameFromRuleUID(ruleUID string) string {
+	return fmt.Sprintf("autogen-panel-recv-%s", ruleUID)
 }
 
 // PutAlerts receives the alerts and then sends them through the corresponding route based on whenever the alert has a receiver embedded or not

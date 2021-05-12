@@ -152,7 +152,7 @@ The option is called `cloud monitoring auto` and the defaults are:
 
 The other automatic option is `grafana auto`. This will automatically set the group by time depending on the time range chosen and the width of the time series panel. For more information about grafana auto, refer to the [interval variable](http://docs.grafana.org/variables/templates-and-variables/#the-interval-variable).
 
-It is also possible to choose fixed time intervals to group by, like `1h` or `1d`.
+You can also choose fixed time intervals to group by, like `1h` or `1d`.
 
 #### Alias patterns
 

@@ -18,7 +18,7 @@ const dataSource = new ElasticDatasource(
     database: '[asd-]YYYY.MM.DD',
     jsonData: {
       interval: 'Daily',
-      esVersion: '2.0.0',
+      esVersion: 2,
       timeField: '@time',
     },
   } as DataSourceInstanceSettings<ElasticsearchOptions>,

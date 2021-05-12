@@ -1,8 +1,8 @@
 import { DataFrame, DataLink, VariableSuggestion } from '@grafana/data';
 import React, { FC, useState } from 'react';
 import { DataLinkEditor } from '../DataLinkEditor';
+import { HorizontalGroup } from '../../Layout/Layout';
 import { Button } from '../../Button';
-import { Modal } from '../../Modal/Modal';
 
 interface DataLinkEditorModalContentProps {
   link: DataLink;
@@ -32,10 +32,7 @@ export const DataLinkEditorModalContent: FC<DataLinkEditorModalContentProps> = (
           setDirtyLink(link);
         }}
       />
-      <Modal.ButtonRow>
-        <Button variant="secondary" onClick={() => onCancel(index)} fill="outline">
-          Cancel
-        </Button>
+      <HorizontalGroup>
         <Button
           onClick={() => {
             onSave(index, dirtyLink);
@@ -43,7 +40,10 @@ export const DataLinkEditorModalContent: FC<DataLinkEditorModalContentProps> = (
         >
           Save
         </Button>
-      </Modal.ButtonRow>
+        <Button variant="secondary" onClick={() => onCancel(index)}>
+          Cancel
+        </Button>
+      </HorizontalGroup>
     </>
   );
 };

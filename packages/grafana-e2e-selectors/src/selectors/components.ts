@@ -15,9 +15,6 @@ export const Components = {
         startValue: 'TestData start value',
       },
     },
-    Jaeger: {
-      traceIDInput: 'Trace ID',
-    },
   },
   Menu: {
     MenuComponent: (title: string) => `${title} menu`,

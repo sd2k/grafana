@@ -1,6 +1,7 @@
 import { NavModel, NavModelItem } from '@grafana/data';
 
 import { FolderDTO } from 'app/types';
+import { getConfig } from '../../../core/config';
 
 export function buildNavModel(folder: FolderDTO): NavModelItem {
   const model = {
@@ -21,14 +22,6 @@ export function buildNavModel(folder: FolderDTO): NavModelItem {
     ],
   };
 
-  model.children.push({
-    active: false,
-    icon: 'library-panel',
-    id: `folder-library-panels-${folder.uid}`,
-    text: 'Panels',
-    url: `${folder.url}/library-panels`,
-  });
-
   if (folder.canAdmin) {
     model.children.push({
       active: false,
@@ -46,6 +39,16 @@ export function buildNavModel(folder: FolderDTO): NavModelItem {
       id: `folder-settings-${folder.uid}`,
       text: 'Settings',
       url: `${folder.url}/settings`,
+    });
+  }
+
+  if (getConfig().featureToggles.panelLibrary) {
+    model.children.push({
+      active: false,
+      icon: 'library-panel',
+      id: `folder-library-panels-${folder.uid}`,
+      text: 'Panels',
+      url: `${folder.url}/library-panels`,
     });
   }
 

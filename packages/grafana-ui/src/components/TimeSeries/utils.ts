@@ -13,7 +13,7 @@ import {
   getFieldSeriesColor,
 } from '@grafana/data';
 
-import { UPlotConfigBuilder, UPlotConfigPrepFn } from '../uPlot/config/UPlotConfigBuilder';
+import { UPlotConfigBuilder } from '../uPlot/config/UPlotConfigBuilder';
 import { FIXED_UNIT } from '../GraphNG/GraphNG';
 import {
   AxisPlacement,
@@ -25,6 +25,7 @@ import {
   ScaleOrientation,
 } from '../uPlot/config';
 import { collectStackingGroups } from '../uPlot/utils';
+import { PrepConfigOpts } from '../GraphNG/utils';
 
 const defaultFormatter = (v: any) => (v == null ? '-' : v.toFixed(1));
 
@@ -34,14 +35,9 @@ const defaultConfig: GraphFieldConfig = {
   axisPlacement: AxisPlacement.Auto,
 };
 
-export const preparePlotConfigBuilder: UPlotConfigPrepFn<{ sync: DashboardCursorSync }> = ({
-  frame,
-  theme,
-  timeZone,
-  getTimeRange,
-  eventBus,
-  sync,
-}) => {
+type PrepConfig = (opts: PrepConfigOpts<{ sync: DashboardCursorSync }>) => UPlotConfigBuilder;
+
+export const preparePlotConfigBuilder: PrepConfig = ({ frame, theme, timeZone, getTimeRange, eventBus, sync }) => {
   const builder = new UPlotConfigBuilder(timeZone);
 
   // X is the first field in the aligned frame
@@ -52,12 +48,11 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<{ sync: DashboardCursor
 
   let seriesIndex = 0;
 
-  const xScaleKey = 'x';
-  let xScaleUnit = '_x';
+  let xScaleKey = '_x';
   let yScaleKey = '';
 
   if (xField.type === FieldType.time) {
-    xScaleUnit = 'time';
+    xScaleKey = 'time';
     builder.addScale({
       scaleKey: xScaleKey,
       orientation: ScaleOrientation.Horizontal,
@@ -79,7 +74,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<{ sync: DashboardCursor
   } else {
     // Not time!
     if (xField.config.unit) {
-      xScaleUnit = xField.config.unit;
+      xScaleKey = xField.config.unit;
     }
 
     builder.addScale({
@@ -236,12 +231,12 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<{ sync: DashboardCursor
           pub: (type: string, src: uPlot, x: number, y: number, w: number, h: number, dataIdx: number) => {
             payload.columnIndex = dataIdx;
             if (x < 0 && y < 0) {
-              payload.point[xScaleUnit] = null;
+              payload.point[xScaleKey] = null;
               payload.point[yScaleKey] = null;
               eventBus.publish(new DataHoverClearEvent(payload));
             } else {
               // convert the points
-              payload.point[xScaleUnit] = src.posToVal(x, xScaleKey);
+              payload.point[xScaleKey] = src.posToVal(x, xScaleKey);
               payload.point[yScaleKey] = src.posToVal(y, yScaleKey);
               eventBus.publish(hoverEvent);
               hoverEvent.payload.down = undefined;

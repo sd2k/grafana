@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { TextArea, InlineFormLabel, Input, Select, HorizontalGroup } from '@grafana/ui';
-import { InfluxQuery } from '../types';
+import { SelectableValue } from '@grafana/data';
+import { ResultFormat, InfluxQuery } from '../types';
 import { useShadowedState } from './useShadowedState';
 import { useUniqueId } from './useUniqueId';
-import { RESULT_FORMATS, DEFAULT_RESULT_FORMAT } from './constants';
+
+const RESULT_FORMATS: Array<SelectableValue<ResultFormat>> = [
+  { label: 'Time series', value: 'time_series' },
+  { label: 'Table', value: 'table' },
+  { label: 'Logs', value: 'logs' },
+];
+
+const DEFAULT_RESULT_FORMAT: ResultFormat = 'time_series';
 
 type Props = {
   query: InfluxQuery;
@@ -14,7 +22,7 @@ type Props = {
 // we handle 3 fields: "query", "alias", "resultFormat"
 // "resultFormat" changes are applied immediately
 // "query" and "alias" changes only happen on onblur
-export const RawInfluxQLEditor = ({ query, onChange, onRunQuery }: Props): JSX.Element => {
+export const RawInfluxQLEditor: FC<Props> = ({ query, onChange, onRunQuery }) => {
   const [currentQuery, setCurrentQuery] = useShadowedState(query.query);
   const [currentAlias, setCurrentAlias] = useShadowedState(query.alias);
   const aliasElementId = useUniqueId();

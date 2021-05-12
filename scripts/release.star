@@ -32,8 +32,7 @@ load(
     'notify_pipeline',
     'integration_test_services',
     'publish_packages_step',
-    'upload_cdn',
-    'validate_scuemata'
+    'upload_cdn'
 )
 
 def release_npm_packages_step(edition, ver_mode):
@@ -77,7 +76,6 @@ def get_steps(edition, ver_mode):
         build_backend_step(edition=edition, ver_mode=ver_mode),
         build_frontend_step(edition=edition, ver_mode=ver_mode),
         build_plugins_step(edition=edition, sign=True),
-        validate_scuemata(),
     ]
 
     # Have to insert Enterprise2 steps before they're depended on (in the gen-version step)

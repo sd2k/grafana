@@ -60,7 +60,7 @@ func (e *BadRequestError) Error() string {
 func New(skipTLSVerify bool, grafanaVersion string, logger plugins.PluginInstallerLogger) *Installer {
 	return &Installer{
 		httpClient:          makeHttpClient(skipTLSVerify, 10*time.Second),
-		httpClientNoTimeout: makeHttpClient(skipTLSVerify, 0),
+		httpClientNoTimeout: makeHttpClient(skipTLSVerify, 10*time.Second),
 		log:                 logger,
 		grafanaVersion:      grafanaVersion,
 	}

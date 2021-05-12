@@ -663,6 +663,10 @@ describe('applyRawFieldOverrides', () => {
       suffix: undefined,
       text: '1599045551050',
       percent: expect.any(Number),
+      threshold: {
+        color: 'red',
+        value: 80,
+      },
     });
 
     expect(getDisplayValue(frames, frameIndex, 1)).toEqual({
@@ -672,6 +676,10 @@ describe('applyRawFieldOverrides', () => {
       prefix: undefined,
       suffix: undefined,
       text: '3.142',
+      threshold: {
+        color: 'green',
+        value: null,
+      },
     });
 
     expect(getDisplayValue(frames, frameIndex, 2)).toEqual({
@@ -681,6 +689,10 @@ describe('applyRawFieldOverrides', () => {
       prefix: undefined,
       suffix: undefined,
       text: '0',
+      threshold: {
+        color: 'green',
+        value: null,
+      },
     });
 
     expect(getDisplayValue(frames, frameIndex, 3)).toEqual({
@@ -690,6 +702,7 @@ describe('applyRawFieldOverrides', () => {
       prefix: undefined,
       suffix: undefined,
       text: '0',
+      threshold: expect.anything(),
     });
 
     expect(getDisplayValue(frames, frameIndex, 4)).toEqual({
@@ -699,6 +712,7 @@ describe('applyRawFieldOverrides', () => {
       prefix: undefined,
       suffix: undefined,
       text: 'A - string',
+      threshold: expect.anything(),
     });
 
     expect(getDisplayValue(frames, frameIndex, 5)).toEqual({
@@ -708,6 +722,7 @@ describe('applyRawFieldOverrides', () => {
       prefix: undefined,
       suffix: undefined,
       text: '2020-09-02 11:19:11',
+      threshold: expect.anything(),
     });
   };
 

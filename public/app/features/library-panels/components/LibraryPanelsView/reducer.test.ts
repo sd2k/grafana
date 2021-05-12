@@ -9,7 +9,7 @@ import {
   LibraryPanelsViewState,
   searchCompleted,
 } from './reducer';
-import { LibraryElementDTO, LibraryElementKind } from '../../types';
+import { LibraryPanelDTO } from '../../types';
 
 describe('libraryPanelsViewReducer', () => {
   describe('when initSearch is dispatched', () => {
@@ -85,8 +85,8 @@ describe('libraryPanelsViewReducer', () => {
   });
 });
 
-function getLibraryPanelMocks(count: number): LibraryElementDTO[] {
-  const mocks: LibraryElementDTO[] = [];
+function getLibraryPanelMocks(count: number): LibraryPanelDTO[] {
+  const mocks: LibraryPanelDTO[] = [];
 
   for (let i = 0; i < count; i++) {
     mocks.push(
@@ -109,6 +109,7 @@ function mockLibraryPanel({
   name = 'Test Panel',
   model = { type: 'text', title: 'Test Panel' },
   meta = {
+    canEdit: true,
     folderName: 'General',
     folderUid: '',
     connectedDashboards: 0,
@@ -120,14 +121,13 @@ function mockLibraryPanel({
   version = 1,
   description = 'a description',
   type = 'text',
-}: Partial<LibraryElementDTO> = {}): LibraryElementDTO {
+}: Partial<LibraryPanelDTO> = {}): LibraryPanelDTO {
   return {
     uid,
     id,
     orgId,
     folderId,
     name,
-    kind: LibraryElementKind.Panel,
     model,
     version,
     meta,

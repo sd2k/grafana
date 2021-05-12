@@ -20,7 +20,6 @@ describe('test comparisons', () => {
         config: {
           decimals: 4,
         },
-        labels: { server: 'A' },
       },
     ],
   });
@@ -39,25 +38,8 @@ describe('test comparisons', () => {
     expect(compareArrayValues(null as any, [frameA], compareDataFrameStructures)).toBeFalsy();
   });
 
-  it('name change should be a structure change', () => {
-    expect(compareDataFrameStructures(frameB, { ...frameB, name: 'AA' })).toBeFalsy();
-  });
-
-  it('label change should be a structure change', () => {
-    const changedFrameB = {
-      ...frameB,
-      fields: [
-        frameB.fields[0],
-        {
-          ...frameB.fields[1],
-          labels: { server: 'B' },
-        },
-      ],
-    };
-    expect(compareDataFrameStructures(frameB, changedFrameB)).toBeFalsy();
-  });
-
-  it('Field copy should not be a structure change', () => {
+  it('name change and field copy is not a structure change', () => {
+    expect(compareDataFrameStructures(frameB, { ...frameB, name: 'AA' })).toBeTruthy();
     expect(compareDataFrameStructures(frameB, { ...frameB, fields: [field0, field1] })).toBeTruthy();
   });
 

@@ -1,4 +1,3 @@
-import { gte, lt } from 'semver';
 import {
   Filters,
   Histogram,
@@ -20,9 +19,9 @@ import { convertOrderByToMetricId, getScriptValue } from './utils';
 
 export class ElasticQueryBuilder {
   timeField: string;
-  esVersion: string;
+  esVersion: number;
 
-  constructor(options: { timeField: string; esVersion: string }) {
+  constructor(options: { timeField: string; esVersion: number }) {
     this.timeField = options.timeField;
     this.esVersion = options.esVersion;
   }
@@ -51,7 +50,7 @@ export class ElasticQueryBuilder {
 
     if (aggDef.settings.orderBy !== void 0) {
       queryNode.terms.order = {};
-      if (aggDef.settings.orderBy === '_term' && gte(this.esVersion, '6.0.0')) {
+      if (aggDef.settings.orderBy === '_term' && this.esVersion >= 60) {
         queryNode.terms.order['_key'] = aggDef.settings.order;
       } else {
         queryNode.terms.order[aggDef.settings.orderBy] = aggDef.settings.order;
@@ -148,7 +147,7 @@ export class ElasticQueryBuilder {
     ];
 
     // fields field not supported on ES 5.x
-    if (lt(this.esVersion, '5.0.0')) {
+    if (this.esVersion < 5) {
       query.fields = ['*', '_source'];
     }
 
@@ -444,7 +443,7 @@ export class ElasticQueryBuilder {
     switch (orderBy) {
       case 'key':
       case 'term':
-        const keyname = gte(this.esVersion, '6.0.0') ? '_key' : '_term';
+        const keyname = this.esVersion >= 60 ? '_key' : '_term';
         query.aggs['1'].terms.order[keyname] = order;
         break;
       case 'doc_count':

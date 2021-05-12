@@ -55,6 +55,7 @@ export class GrafanaBootConfig implements GrafanaConfig {
   featureToggles: FeatureToggles = {
     meta: false,
     ngalert: false,
+    panelLibrary: false,
     reportVariables: false,
     accesscontrol: false,
     trimDefaults: false,

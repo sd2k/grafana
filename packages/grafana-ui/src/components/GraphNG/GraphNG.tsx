@@ -6,12 +6,13 @@ import {
   DataFrame,
   FieldMatcherID,
   fieldMatchers,
+  FieldType,
   LegacyGraphHoverClearEvent,
   LegacyGraphHoverEvent,
   TimeRange,
   TimeZone,
 } from '@grafana/data';
-import { preparePlotFrame as defaultPreparePlotFrame } from './utils';
+import { preparePlotFrame } from './utils';
 
 import { VizLegendOptions } from '../VizLegend/models.gen';
 import { PanelContext, PanelContextRoot } from '../PanelChrome/PanelContext';
@@ -38,10 +39,10 @@ export interface GraphNGProps extends Themeable2 {
   fields?: XYFieldMatchers; // default will assume timeseries data
   onLegendClick?: (event: GraphNGLegendEvent) => void;
   children?: (builder: UPlotConfigBuilder, alignedFrame: DataFrame) => React.ReactNode;
+
   prepConfig: (alignedFrame: DataFrame, getTimeRange: () => TimeRange) => UPlotConfigBuilder;
   propsToDiff?: string[];
-  preparePlotFrame?: (frames: DataFrame[], dimFields: XYFieldMatchers) => DataFrame;
-  renderLegend: (config: UPlotConfigBuilder) => React.ReactElement | null;
+  renderLegend: (config: UPlotConfigBuilder) => React.ReactElement;
 }
 
 function sameProps(prevProps: any, nextProps: any, propsToDiff: string[] = []) {
@@ -84,11 +85,9 @@ export class GraphNG extends React.Component<GraphNGProps, GraphNGState> {
   prepState(props: GraphNGProps, withConfig = true) {
     let state: GraphNGState = null as any;
 
-    const { frames, fields, preparePlotFrame } = props;
+    const { frames, fields } = props;
 
-    const preparePlotFrameFn = preparePlotFrame || defaultPreparePlotFrame;
-
-    const alignedFrame = preparePlotFrameFn(
+    const alignedFrame = preparePlotFrame(
       frames,
       fields || {
         x: fieldMatchers.get(FieldMatcherID.firstTimeField).get({}),
@@ -100,7 +99,7 @@ export class GraphNG extends React.Component<GraphNGProps, GraphNGState> {
     if (alignedFrame) {
       state = {
         alignedFrame,
-        alignedData: preparePlotData(alignedFrame),
+        alignedData: preparePlotData(alignedFrame, [FieldType.number]),
       };
       pluginLog('GraphNG', false, 'data prepared', state.alignedData);
 

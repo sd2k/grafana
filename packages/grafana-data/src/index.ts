@@ -14,7 +14,6 @@ export * from './valueFormats';
 export * from './field';
 export * from './events';
 export * from './themes';
-export * from './monaco';
 export {
   ValueMatcherOptions,
   BasicValueMatcherOptions,

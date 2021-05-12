@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-
 	"github.com/stretchr/testify/require"
 	"gopkg.in/macaron.v1"
 
+	"github.com/grafana/grafana/pkg/api/response"
 	"github.com/grafana/grafana/pkg/components/simplejson"
 	dboards "github.com/grafana/grafana/pkg/dashboards"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/services/dashboards"
-	"github.com/grafana/grafana/pkg/services/libraryelements"
 	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/setting"
 )
@@ -29,6 +28,10 @@ const UserInDbAvatar = "/avatar/402d08de060496d6b6874495fe20f5ad"
 func TestLoadLibraryPanelsForDashboard(t *testing.T) {
 	scenarioWithLibraryPanel(t, "When an admin tries to load a dashboard with a library panel, it should copy JSON properties from library panel",
 		func(t *testing.T, sc scenarioContext) {
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID, ":dashboardId": "1"})
+			resp := sc.service.connectHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
 			dashJSON := map[string]interface{}{
 				"panels": []interface{}{
 					map[string]interface{}{
@@ -56,19 +59,13 @@ func TestLoadLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing LoadLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   1,
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
-			err := sc.elementService.ConnectElementsToDashboard(sc.reqContext, []string{sc.initialResult.Result.UID}, dashInDB.Id)
-			require.NoError(t, err)
 
-			err = sc.service.LoadLibraryPanelsForDashboard(sc.reqContext, dashInDB)
+			err := sc.service.LoadLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.NoError(t, err)
 			expectedJSON := map[string]interface{}{
-				"title":   "Testing LoadLibraryPanelsForDashboard",
-				"uid":     dashInDB.Uid,
-				"version": dashInDB.Version,
 				"panels": []interface{}{
 					map[string]interface{}{
 						"id": int64(1),
@@ -96,6 +93,7 @@ func TestLoadLibraryPanelsForDashboard(t *testing.T) {
 							"description": sc.initialResult.Result.Description,
 							"version":     sc.initialResult.Result.Version,
 							"meta": map[string]interface{}{
+								"canEdit":             false,
 								"folderName":          "ScenarioFolder",
 								"folderUid":           sc.folder.Uid,
 								"connectedDashboards": int64(1),
@@ -126,6 +124,10 @@ func TestLoadLibraryPanelsForDashboard(t *testing.T) {
 
 	scenarioWithLibraryPanel(t, "When an admin tries to load a dashboard with a library panel without uid, it should fail",
 		func(t *testing.T, sc scenarioContext) {
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID, ":dashboardId": "1"})
+			resp := sc.service.connectHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
 			dashJSON := map[string]interface{}{
 				"panels": []interface{}{
 					map[string]interface{}{
@@ -152,14 +154,11 @@ func TestLoadLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing LoadLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   1,
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
-			err := sc.elementService.ConnectElementsToDashboard(sc.reqContext, []string{sc.initialResult.Result.UID}, dashInDB.Id)
-			require.NoError(t, err)
 
-			err = sc.service.LoadLibraryPanelsForDashboard(sc.reqContext, dashInDB)
+			err := sc.service.LoadLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.EqualError(t, err, errLibraryPanelHeaderUIDMissing.Error())
 		})
 
@@ -192,17 +191,13 @@ func TestLoadLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing LoadLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   1,
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
 
-			err := sc.service.LoadLibraryPanelsForDashboard(sc.reqContext, dashInDB)
+			err := sc.service.LoadLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.NoError(t, err)
 			expectedJSON := map[string]interface{}{
-				"title":   "Testing LoadLibraryPanelsForDashboard",
-				"uid":     dashInDB.Uid,
-				"version": dashInDB.Version,
 				"panels": []interface{}{
 					map[string]interface{}{
 						"id": int64(1),
@@ -269,17 +264,13 @@ func TestCleanLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing CleanLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   1,
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
 
-			err := sc.service.CleanLibraryPanelsForDashboard(dashInDB)
+			err := sc.service.CleanLibraryPanelsForDashboard(&dash)
 			require.NoError(t, err)
 			expectedJSON := map[string]interface{}{
-				"title":   "Testing CleanLibraryPanelsForDashboard",
-				"uid":     dashInDB.Uid,
-				"version": dashInDB.Version,
 				"panels": []interface{}{
 					map[string]interface{}{
 						"id": int64(1),
@@ -342,12 +333,11 @@ func TestCleanLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing CleanLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   1,
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
 
-			err := sc.service.CleanLibraryPanelsForDashboard(dashInDB)
+			err := sc.service.CleanLibraryPanelsForDashboard(&dash)
 			require.EqualError(t, err, errLibraryPanelHeaderUIDMissing.Error())
 		})
 
@@ -382,12 +372,11 @@ func TestCleanLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing CleanLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   1,
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
 
-			err := sc.service.CleanLibraryPanelsForDashboard(dashInDB)
+			err := sc.service.CleanLibraryPanelsForDashboard(&dash)
 			require.EqualError(t, err, errLibraryPanelHeaderNameMissing.Error())
 		})
 }
@@ -425,18 +414,22 @@ func TestConnectLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing ConnectLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   int64(1),
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
 
-			err := sc.service.ConnectLibraryPanelsForDashboard(sc.reqContext, dashInDB)
+			err := sc.service.ConnectLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.NoError(t, err)
 
-			elements, err := sc.elementService.GetElementsForDashboard(sc.reqContext, dashInDB.Id)
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID})
+			resp := sc.service.getConnectedDashboardsHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			var dashResult libraryPanelDashboardsResult
+			err = json.Unmarshal(resp.Body(), &dashResult)
 			require.NoError(t, err)
-			require.Len(t, elements, 1)
-			require.Equal(t, sc.initialResult.Result.UID, elements[sc.initialResult.Result.UID].UID)
+			require.Len(t, dashResult.Result, 1)
+			require.Equal(t, int64(1), dashResult.Result[0])
 		})
 
 	scenarioWithLibraryPanel(t, "When an admin tries to store a dashboard with a library panel without uid, it should fail",
@@ -470,32 +463,23 @@ func TestConnectLibraryPanelsForDashboard(t *testing.T) {
 				},
 			}
 			dash := models.Dashboard{
-				Title: "Testing ConnectLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   int64(1),
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
 
-			err := sc.service.ConnectLibraryPanelsForDashboard(sc.reqContext, dashInDB)
+			err := sc.service.ConnectLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.EqualError(t, err, errLibraryPanelHeaderUIDMissing.Error())
 		})
 
 	scenarioWithLibraryPanel(t, "When an admin tries to store a dashboard with unused/removed library panels, it should disconnect unused/removed library panels",
 		func(t *testing.T, sc scenarioContext) {
-			unused, err := sc.elementService.CreateElement(sc.reqContext, libraryelements.CreateLibraryElementCommand{
-				FolderID: sc.folder.Id,
-				Name:     "Unused Libray Panel",
-				Model: []byte(`
-			{
-			  "datasource": "${DS_GDEV-TESTDATA}",
-			  "id": 4,
-			  "title": "Unused Libray Panel",
-			  "type": "text",
-			  "description": "Unused description"
-			}
-		`),
-				Kind: int64(libraryelements.Panel),
-			})
-			require.NoError(t, err)
+			command := getCreateCommand(sc.folder.Id, "Unused Libray Panel")
+			resp := sc.service.createHandler(sc.reqContext, command)
+			var unused = validateAndUnMarshalResponse(t, resp)
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": unused.Result.UID, ":dashboardId": "1"})
+			resp = sc.service.connectHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
 			dashJSON := map[string]interface{}{
 				"panels": []interface{}{
 					map[string]interface{}{
@@ -508,7 +492,7 @@ func TestConnectLibraryPanelsForDashboard(t *testing.T) {
 						},
 					},
 					map[string]interface{}{
-						"id": int64(4),
+						"id": int64(2),
 						"gridPos": map[string]interface{}{
 							"h": 6,
 							"w": 6,
@@ -517,87 +501,258 @@ func TestConnectLibraryPanelsForDashboard(t *testing.T) {
 						},
 						"datasource": "${DS_GDEV-TESTDATA}",
 						"libraryPanel": map[string]interface{}{
-							"uid":  unused.UID,
-							"name": unused.Name,
+							"uid":  sc.initialResult.Result.UID,
+							"name": sc.initialResult.Result.Name,
 						},
-						"title":       "Unused Libray Panel",
-						"description": "Unused description",
+						"title": "Text - Library Panel",
+						"type":  "text",
 					},
 				},
 			}
-
 			dash := models.Dashboard{
-				Title: "Testing ConnectLibraryPanelsForDashboard",
-				Data:  simplejson.NewFromAny(dashJSON),
+				Id:   int64(1),
+				Data: simplejson.NewFromAny(dashJSON),
 			}
-			dashInDB := createDashboard(t, sc.sqlStore, sc.user, &dash, sc.folder.Id)
-			err = sc.elementService.ConnectElementsToDashboard(sc.reqContext, []string{sc.initialResult.Result.UID}, dashInDB.Id)
+
+			err := sc.service.ConnectLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.NoError(t, err)
 
-			panelJSON := []interface{}{
-				map[string]interface{}{
-					"id": int64(1),
-					"gridPos": map[string]interface{}{
-						"h": 6,
-						"w": 6,
-						"x": 0,
-						"y": 0,
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID})
+			resp = sc.service.getConnectedDashboardsHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			var existingResult libraryPanelDashboardsResult
+			err = json.Unmarshal(resp.Body(), &existingResult)
+			require.NoError(t, err)
+			require.Len(t, existingResult.Result, 1)
+			require.Equal(t, int64(1), existingResult.Result[0])
+
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": unused.Result.UID})
+			resp = sc.service.getConnectedDashboardsHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			var unusedResult libraryPanelDashboardsResult
+			err = json.Unmarshal(resp.Body(), &unusedResult)
+			require.NoError(t, err)
+			require.Len(t, unusedResult.Result, 0)
+		})
+}
+
+func TestDisconnectLibraryPanelsForDashboard(t *testing.T) {
+	scenarioWithLibraryPanel(t, "When an admin tries to delete a dashboard with a library panel, it should disconnect the two",
+		func(t *testing.T, sc scenarioContext) {
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID, ":dashboardId": "1"})
+			resp := sc.service.connectHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			dashJSON := map[string]interface{}{
+				"panels": []interface{}{
+					map[string]interface{}{
+						"id": int64(1),
+						"gridPos": map[string]interface{}{
+							"h": 6,
+							"w": 6,
+							"x": 0,
+							"y": 0,
+						},
 					},
-				},
-				map[string]interface{}{
-					"id": int64(2),
-					"gridPos": map[string]interface{}{
-						"h": 6,
-						"w": 6,
-						"x": 6,
-						"y": 0,
+					map[string]interface{}{
+						"id": int64(2),
+						"gridPos": map[string]interface{}{
+							"h": 6,
+							"w": 6,
+							"x": 6,
+							"y": 0,
+						},
+						"datasource": "${DS_GDEV-TESTDATA}",
+						"libraryPanel": map[string]interface{}{
+							"uid":  sc.initialResult.Result.UID,
+							"name": sc.initialResult.Result.Name,
+						},
+						"title": "Text - Library Panel",
+						"type":  "text",
 					},
-					"datasource": "${DS_GDEV-TESTDATA}",
-					"libraryPanel": map[string]interface{}{
-						"uid":  sc.initialResult.Result.UID,
-						"name": sc.initialResult.Result.Name,
-					},
-					"title": "Text - Library Panel",
-					"type":  "text",
 				},
 			}
-			dashInDB.Data.Set("panels", panelJSON)
-			err = sc.service.ConnectLibraryPanelsForDashboard(sc.reqContext, dashInDB)
+			dash := models.Dashboard{
+				Id:   int64(1),
+				Data: simplejson.NewFromAny(dashJSON),
+			}
+
+			err := sc.service.DisconnectLibraryPanelsForDashboard(sc.reqContext, &dash)
 			require.NoError(t, err)
 
-			elements, err := sc.elementService.GetElementsForDashboard(sc.reqContext, dashInDB.Id)
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID})
+			resp = sc.service.getConnectedDashboardsHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			var dashResult libraryPanelDashboardsResult
+			err = json.Unmarshal(resp.Body(), &dashResult)
 			require.NoError(t, err)
-			require.Len(t, elements, 1)
-			require.Equal(t, sc.initialResult.Result.UID, elements[sc.initialResult.Result.UID].UID)
+			require.Empty(t, dashResult.Result)
+		})
+
+	scenarioWithLibraryPanel(t, "When an admin tries to delete a dashboard with a library panel without uid, it should fail",
+		func(t *testing.T, sc scenarioContext) {
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID, ":dashboardId": "1"})
+			resp := sc.service.connectHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			dashJSON := map[string]interface{}{
+				"panels": []interface{}{
+					map[string]interface{}{
+						"id": int64(1),
+						"gridPos": map[string]interface{}{
+							"h": 6,
+							"w": 6,
+							"x": 0,
+							"y": 0,
+						},
+					},
+					map[string]interface{}{
+						"id": int64(2),
+						"gridPos": map[string]interface{}{
+							"h": 6,
+							"w": 6,
+							"x": 6,
+							"y": 0,
+						},
+						"datasource": "${DS_GDEV-TESTDATA}",
+						"libraryPanel": map[string]interface{}{
+							"name": sc.initialResult.Result.Name,
+						},
+						"title": "Text - Library Panel",
+						"type":  "text",
+					},
+				},
+			}
+			dash := models.Dashboard{
+				Id:   int64(1),
+				Data: simplejson.NewFromAny(dashJSON),
+			}
+
+			err := sc.service.DisconnectLibraryPanelsForDashboard(sc.reqContext, &dash)
+			require.EqualError(t, err, errLibraryPanelHeaderUIDMissing.Error())
+		})
+}
+
+func TestDeleteLibraryPanelsInFolder(t *testing.T) {
+	scenarioWithLibraryPanel(t, "When an admin tries to delete a folder that contains connected library panels, it should fail",
+		func(t *testing.T, sc scenarioContext) {
+			sc.reqContext.ReplaceAllParams(map[string]string{":uid": sc.initialResult.Result.UID, ":dashboardId": "1"})
+			resp := sc.service.connectHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+
+			err := sc.service.DeleteLibraryPanelsInFolder(sc.reqContext, sc.folder.Uid)
+			require.EqualError(t, err, ErrFolderHasConnectedLibraryPanels.Error())
+		})
+
+	scenarioWithLibraryPanel(t, "When an admin tries to delete a folder that contains disconnected library panels, it should delete all disconnected library panels too",
+		func(t *testing.T, sc scenarioContext) {
+			resp := sc.service.getAllHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+			var result libraryPanelsSearch
+			err := json.Unmarshal(resp.Body(), &result)
+			require.NoError(t, err)
+			require.NotNil(t, result.Result)
+			require.Equal(t, 1, len(result.Result.LibraryPanels))
+
+			err = sc.service.DeleteLibraryPanelsInFolder(sc.reqContext, sc.folder.Uid)
+			require.NoError(t, err)
+			resp = sc.service.getAllHandler(sc.reqContext)
+			require.Equal(t, 200, resp.Status())
+			err = json.Unmarshal(resp.Body(), &result)
+			require.NoError(t, err)
+			require.NotNil(t, result.Result)
+			require.Equal(t, 0, len(result.Result.LibraryPanels))
 		})
 }
 
 type libraryPanel struct {
-	ID          int64
-	OrgID       int64
-	FolderID    int64
-	UID         string
-	Name        string
+	ID          int64  `json:"id"`
+	OrgID       int64  `json:"orgId"`
+	FolderID    int64  `json:"folderId"`
+	UID         string `json:"uid"`
+	Name        string `json:"name"`
 	Type        string
 	Description string
-	Model       map[string]interface{}
-	Version     int64
-	Meta        libraryelements.LibraryElementDTOMeta
+	Model       map[string]interface{} `json:"model"`
+	Version     int64                  `json:"version"`
+	Meta        LibraryPanelDTOMeta    `json:"meta"`
 }
 
 type libraryPanelResult struct {
 	Result libraryPanel `json:"result"`
 }
 
+type libraryPanelsSearch struct {
+	Result libraryPanelsSearchResult `json:"result"`
+}
+
+type libraryPanelsSearchResult struct {
+	TotalCount    int64          `json:"totalCount"`
+	LibraryPanels []libraryPanel `json:"libraryPanels"`
+	Page          int            `json:"page"`
+	PerPage       int            `json:"perPage"`
+}
+
+type libraryPanelDashboardsResult struct {
+	Result []int64 `json:"result"`
+}
+
+func overrideLibraryPanelServiceInRegistry(cfg *setting.Cfg) LibraryPanelService {
+	lps := LibraryPanelService{
+		SQLStore: nil,
+		Cfg:      cfg,
+	}
+
+	overrideServiceFunc := func(d registry.Descriptor) (*registry.Descriptor, bool) {
+		descriptor := registry.Descriptor{
+			Name:         "LibraryPanelService",
+			Instance:     &lps,
+			InitPriority: 0,
+		}
+
+		return &descriptor, true
+	}
+
+	registry.RegisterOverride(overrideServiceFunc)
+
+	return lps
+}
+
+func getCreateCommand(folderID int64, name string) createLibraryPanelCommand {
+	command := getCreateCommandWithModel(folderID, name, []byte(`
+			{
+			  "datasource": "${DS_GDEV-TESTDATA}",
+			  "id": 1,
+			  "title": "Text - Library Panel",
+			  "type": "text",
+			  "description": "A description"
+			}
+		`))
+
+	return command
+}
+
+func getCreateCommandWithModel(folderID int64, name string, model []byte) createLibraryPanelCommand {
+	command := createLibraryPanelCommand{
+		FolderID: folderID,
+		Name:     name,
+		Model:    model,
+	}
+
+	return command
+}
+
 type scenarioContext struct {
-	ctx            *macaron.Context
-	service        Service
-	elementService libraryelements.Service
-	reqContext     *models.ReqContext
-	user           models.SignedInUser
-	folder         *models.Folder
-	initialResult  libraryPanelResult
-	sqlStore       *sqlstore.SQLStore
+	ctx           *macaron.Context
+	service       *LibraryPanelService
+	reqContext    *models.ReqContext
+	user          models.SignedInUser
+	folder        *models.Folder
+	initialResult libraryPanelResult
+	sqlStore      *sqlstore.SQLStore
 }
 
 type folderACLItem struct {
@@ -605,7 +760,9 @@ type folderACLItem struct {
 	permission models.PermissionType
 }
 
-func createDashboard(t *testing.T, sqlStore *sqlstore.SQLStore, user models.SignedInUser, dash *models.Dashboard, folderID int64) *models.Dashboard {
+func createDashboard(t *testing.T, sqlStore *sqlstore.SQLStore, user models.SignedInUser, title string,
+	folderID int64) *models.Dashboard {
+	dash := models.NewDashboard(title)
 	dash.FolderId = folderID
 	dashItem := &dashboards.SaveDashboardDTO{
 		Dashboard: dash,
@@ -667,44 +824,25 @@ func updateFolderACL(t *testing.T, sqlStore *sqlstore.SQLStore, folderID int64, 
 	require.NoError(t, err)
 }
 
+func validateAndUnMarshalResponse(t *testing.T, resp response.Response) libraryPanelResult {
+	t.Helper()
+
+	require.Equal(t, 200, resp.Status())
+
+	var result = libraryPanelResult{}
+	err := json.Unmarshal(resp.Body(), &result)
+	require.NoError(t, err)
+
+	return result
+}
+
 func scenarioWithLibraryPanel(t *testing.T, desc string, fn func(t *testing.T, sc scenarioContext)) {
 	t.Helper()
 
 	testScenario(t, desc, func(t *testing.T, sc scenarioContext) {
-		command := libraryelements.CreateLibraryElementCommand{
-			FolderID: sc.folder.Id,
-			Name:     "Text - Library Panel",
-			Model: []byte(`
-			{
-			  "datasource": "${DS_GDEV-TESTDATA}",
-			  "id": 1,
-			  "title": "Text - Library Panel",
-			  "type": "text",
-			  "description": "A description"
-			}
-		`),
-			Kind: int64(libraryelements.Panel),
-		}
-		resp, err := sc.elementService.CreateElement(sc.reqContext, command)
-		require.NoError(t, err)
-		var model map[string]interface{}
-		err = json.Unmarshal(resp.Model, &model)
-		require.NoError(t, err)
-
-		sc.initialResult = libraryPanelResult{
-			Result: libraryPanel{
-				ID:          resp.ID,
-				OrgID:       resp.OrgID,
-				FolderID:    resp.FolderID,
-				UID:         resp.UID,
-				Name:        resp.Name,
-				Type:        resp.Type,
-				Description: resp.Description,
-				Model:       model,
-				Version:     resp.Version,
-				Meta:        resp.Meta,
-			},
-		}
+		command := getCreateCommand(sc.folder.Id, "Text - Library Panel")
+		resp := sc.service.createHandler(sc.reqContext, command)
+		sc.initialResult = validateAndUnMarshalResponse(t, resp)
 
 		fn(t, sc)
 	})
@@ -721,19 +859,19 @@ func testScenario(t *testing.T, desc string, fn func(t *testing.T, sc scenarioCo
 		ctx := macaron.Context{
 			Req: macaron.Request{Request: &http.Request{}},
 		}
-		cfg := setting.NewCfg()
 		orgID := int64(1)
 		role := models.ROLE_ADMIN
+
+		cfg := setting.NewCfg()
+		// Everything in this service is behind the feature toggle "panelLibrary"
+		cfg.FeatureToggles = map[string]bool{"panelLibrary": true}
+		// Because the LibraryPanelService is behind a feature toggle, we need to override the service in the registry
+		// with a Cfg that contains the feature toggle so migrations are run properly
+		service := overrideLibraryPanelServiceInRegistry(cfg)
+
+		// We need to assign SQLStore after the override and migrations are done
 		sqlStore := sqlstore.InitTestDB(t)
-		elementService := libraryelements.LibraryElementService{
-			Cfg:      cfg,
-			SQLStore: sqlStore,
-		}
-		service := LibraryPanelService{
-			Cfg:                   cfg,
-			SQLStore:              sqlStore,
-			LibraryElementService: &elementService,
-		}
+		service.SQLStore = sqlStore
 
 		user := models.SignedInUser{
 			UserId:     1,
@@ -757,11 +895,10 @@ func testScenario(t *testing.T, desc string, fn func(t *testing.T, sc scenarioCo
 		require.NoError(t, err)
 
 		sc := scenarioContext{
-			user:           user,
-			ctx:            &ctx,
-			service:        &service,
-			elementService: &elementService,
-			sqlStore:       sqlStore,
+			user:     user,
+			ctx:      &ctx,
+			service:  &service,
+			sqlStore: sqlStore,
 			reqContext: &models.ReqContext{
 				Context:      &ctx,
 				SignedInUser: &user,

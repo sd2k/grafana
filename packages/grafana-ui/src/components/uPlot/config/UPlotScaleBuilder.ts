@@ -1,7 +1,6 @@
 import uPlot, { Scale, Range } from 'uplot';
 import { PlotConfigBuilder } from '../types';
-import { ScaleOrientation, ScaleDirection } from '../config';
-import { ScaleDistribution } from '../models.gen';
+import { ScaleDistribution, ScaleOrientation, ScaleDirection } from '../config';
 
 export interface ScaleProps {
   scaleKey: string;
@@ -38,12 +37,12 @@ export class UPlotScaleBuilder extends PlotConfigBuilder<ScaleProps, Scale> {
     const distribution = !isTime
       ? {
           distr:
-            this.props.distribution === ScaleDistribution.Log
+            this.props.distribution === ScaleDistribution.Logarithmic
               ? 3
               : this.props.distribution === ScaleDistribution.Ordinal
               ? 2
               : 1,
-          log: this.props.distribution === ScaleDistribution.Log ? this.props.log || 2 : undefined,
+          log: this.props.distribution === ScaleDistribution.Logarithmic ? this.props.log || 2 : undefined,
         }
       : {};
 

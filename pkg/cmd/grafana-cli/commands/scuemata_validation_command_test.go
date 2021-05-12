@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"embed"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,13 +12,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+//go:embed testdata/public/*/*.cue testdata/public/*/plugin.json
+var base embed.FS
+var pluginSchema, _ = fs.Sub(base, "testdata/public")
+
 func TestValidateScuemataBasics(t *testing.T) {
 	t.Run("Testing scuemata validity with valid cue schemas", func(t *testing.T) {
 		tempDir := os.DirFS(filepath.Join("testdata", "valid_scuemata"))
 
 		var baseLoadPaths = load.BaseLoadPaths{
 			BaseCueFS:       tempDir,
-			DistPluginCueFS: load.GetDefaultLoadPaths().DistPluginCueFS,
+			DistPluginCueFS: pluginSchema,
 		}
 
 		err := validate(baseLoadPaths, load.BaseDashboardFamily)
@@ -31,7 +37,7 @@ func TestValidateScuemataBasics(t *testing.T) {
 
 		var baseLoadPaths = load.BaseLoadPaths{
 			BaseCueFS:       tempDir,
-			DistPluginCueFS: load.GetDefaultLoadPaths().DistPluginCueFS,
+			DistPluginCueFS: pluginSchema,
 		}
 
 		err := validate(baseLoadPaths, load.BaseDashboardFamily)
@@ -43,7 +49,7 @@ func TestValidateScuemataBasics(t *testing.T) {
 
 		var baseLoadPaths = load.BaseLoadPaths{
 			BaseCueFS:       tempDir,
-			DistPluginCueFS: load.GetDefaultLoadPaths().DistPluginCueFS,
+			DistPluginCueFS: pluginSchema,
 		}
 
 		err := validate(baseLoadPaths, load.BaseDashboardFamily)

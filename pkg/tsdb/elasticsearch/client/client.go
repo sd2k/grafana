@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Masterminds/semver"
 	"github.com/grafana/grafana/pkg/components/simplejson"
 	"github.com/grafana/grafana/pkg/infra/log"
 	"github.com/grafana/grafana/pkg/tsdb/interval"
@@ -35,7 +34,7 @@ var newDatasourceHttpClient = func(ds *models.DataSource) (*http.Client, error) 
 
 // Client represents a client which can interact with elasticsearch api
 type Client interface {
-	GetVersion() *semver.Version
+	GetVersion() int
 	GetTimeField() string
 	GetMinInterval(queryInterval string) (time.Duration, error)
 	ExecuteMultisearch(r *MultiSearchRequest) (*MultiSearchResponse, error)
@@ -43,38 +42,9 @@ type Client interface {
 	EnableDebug()
 }
 
-func coerceVersion(v *simplejson.Json) (*semver.Version, error) {
-	versionString, err := v.String()
-
-	if err != nil {
-		versionNumber, err := v.Int()
-		if err != nil {
-			return nil, err
-		}
-
-		switch versionNumber {
-		case 2:
-			return semver.NewVersion("2.0.0")
-		case 5:
-			return semver.NewVersion("5.0.0")
-		case 56:
-			return semver.NewVersion("5.6.0")
-		case 60:
-			return semver.NewVersion("6.0.0")
-		case 70:
-			return semver.NewVersion("7.0.0")
-		default:
-			return nil, fmt.Errorf("elasticsearch version=%d is not supported", versionNumber)
-		}
-	}
-
-	return semver.NewVersion(versionString)
-}
-
 // NewClient creates a new elasticsearch client
 var NewClient = func(ctx context.Context, ds *models.DataSource, timeRange plugins.DataTimeRange) (Client, error) {
-	version, err := coerceVersion(ds.JsonData.Get("esVersion"))
-
+	version, err := ds.JsonData.Get("esVersion").Int()
 	if err != nil {
 		return nil, fmt.Errorf("elasticsearch version is required, err=%v", err)
 	}
@@ -95,29 +65,34 @@ var NewClient = func(ctx context.Context, ds *models.DataSource, timeRange plugi
 		return nil, err
 	}
 
-	clientLog.Info("Creating new client", "version", version.String(), "timeField", timeField, "indices", strings.Join(indices, ", "))
+	clientLog.Debug("Creating new client", "version", version, "timeField", timeField, "indices", strings.Join(indices, ", "))
 
-	return &baseClientImpl{
-		ctx:       ctx,
-		ds:        ds,
-		version:   version,
-		timeField: timeField,
-		indices:   indices,
-		timeRange: timeRange,
-	}, nil
+	switch version {
+	case 2, 5, 56, 60, 70:
+		return &baseClientImpl{
+			ctx:       ctx,
+			ds:        ds,
+			version:   version,
+			timeField: timeField,
+			indices:   indices,
+			timeRange: timeRange,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("elasticsearch version=%d is not supported", version)
 }
 
 type baseClientImpl struct {
 	ctx          context.Context
 	ds           *models.DataSource
-	version      *semver.Version
+	version      int
 	timeField    string
 	indices      []string
 	timeRange    plugins.DataTimeRange
 	debugEnabled bool
 }
 
-func (c *baseClientImpl) GetVersion() *semver.Version {
+func (c *baseClientImpl) GetVersion() int {
 	return c.version
 }
 
@@ -322,15 +297,13 @@ func (c *baseClientImpl) createMultiSearchRequests(searchRequests []*SearchReque
 			interval: searchReq.Interval,
 		}
 
-		if c.version.Major() < 5 {
+		if c.version == 2 {
 			mr.header["search_type"] = "count"
-		} else {
-			allowedVersionRange, _ := semver.NewConstraint(">=5.6.0, <7.0.0")
+		}
 
-			if allowedVersionRange.Check(c.version) {
-				maxConcurrentShardRequests := c.getSettings().Get("maxConcurrentShardRequests").MustInt(256)
-				mr.header["max_concurrent_shard_requests"] = maxConcurrentShardRequests
-			}
+		if c.version >= 56 && c.version < 70 {
+			maxConcurrentShardRequests := c.getSettings().Get("maxConcurrentShardRequests").MustInt(256)
+			mr.header["max_concurrent_shard_requests"] = maxConcurrentShardRequests
 		}
 
 		multiRequests = append(multiRequests, &mr)
@@ -340,7 +313,7 @@ func (c *baseClientImpl) createMultiSearchRequests(searchRequests []*SearchReque
 }
 
 func (c *baseClientImpl) getMultiSearchQueryParameters() string {
-	if c.version.Major() >= 7 {
+	if c.version >= 70 {
 		maxConcurrentShardRequests := c.getSettings().Get("maxConcurrentShardRequests").MustInt(5)
 		return fmt.Sprintf("max_concurrent_shard_requests=%d", maxConcurrentShardRequests)
 	}

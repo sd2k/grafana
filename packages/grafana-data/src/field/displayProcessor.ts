@@ -5,13 +5,11 @@ import { toString, toNumber as _toNumber, isEmpty, isBoolean } from 'lodash';
 import { Field, FieldType } from '../types/dataFrame';
 import { DisplayProcessor, DisplayValue } from '../types/displayValue';
 import { getValueFormat } from '../valueFormats/valueFormats';
-import { getValueMappingResult } from '../utils/valueMappings';
+import { getMappedValue } from '../utils/valueMappings';
 import { dateTime } from '../datetime';
 import { KeyValue, TimeZone } from '../types';
 import { getScaleCalculator } from './scale';
 import { GrafanaTheme2 } from '../themes/types';
-import { anyToNumber } from '../utils/anyToNumber';
-import { getColorForTheme } from '../utils/namedColorsPalette';
 
 interface DisplayProcessorOptions {
   field: Partial<Field>;
@@ -64,24 +62,20 @@ export function getDisplayProcessor(options?: DisplayProcessorOptions): DisplayP
     }
 
     let text = toString(value);
-    let numeric = isStringUnit ? NaN : anyToNumber(value);
+    let numeric = isStringUnit ? NaN : toNumber(value);
     let prefix: string | undefined = undefined;
     let suffix: string | undefined = undefined;
-    let color: string | undefined = undefined;
-    let percent: number | undefined = undefined;
-
     let shouldFormat = true;
 
     if (mappings && mappings.length > 0) {
-      const mappingResult = getValueMappingResult(mappings, value);
+      const mappedValue = getMappedValue(mappings, value);
 
-      if (mappingResult) {
-        if (mappingResult.text != null) {
-          text = mappingResult.text;
-        }
+      if (mappedValue) {
+        text = mappedValue.text;
+        const v = isStringUnit ? NaN : toNumber(text);
 
-        if (mappingResult.color != null) {
-          color = getColorForTheme(mappingResult.color, options.theme.v1);
+        if (!isNaN(v)) {
+          numeric = v;
         }
 
         shouldFormat = false;
@@ -97,10 +91,8 @@ export function getDisplayProcessor(options?: DisplayProcessorOptions): DisplayP
       }
 
       // Return the value along with scale info
-      if (color === undefined) {
-        const scaleResult = scaleFunc(numeric);
-        color = scaleResult.color;
-        percent = scaleResult.percent;
+      if (text) {
+        return { text, numeric, prefix, suffix, ...scaleFunc(numeric) };
       }
     }
 
@@ -112,18 +104,26 @@ export function getDisplayProcessor(options?: DisplayProcessorOptions): DisplayP
       }
     }
 
-    if (!color) {
-      const scaleResult = scaleFunc(-Infinity);
-      color = scaleResult.color;
-      percent = scaleResult.percent;
-    }
-
-    return { text, numeric, prefix, suffix, color, percent };
+    return { text, numeric, prefix, suffix, ...scaleFunc(-Infinity) };
   };
 }
 
+/** Will return any value as a number or NaN */
+function toNumber(value: any): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (value === '' || value === null || value === undefined || Array.isArray(value)) {
+    return NaN; // lodash calls them 0
+  }
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+  return _toNumber(value);
+}
+
 function toStringProcessor(value: any): DisplayValue {
-  return { text: toString(value), numeric: anyToNumber(value) };
+  return { text: toString(value), numeric: toNumber(value) };
 }
 
 export function getRawDisplayProcessor(): DisplayProcessor {

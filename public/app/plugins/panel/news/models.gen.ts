@@ -8,9 +8,6 @@ export const modelVersion = Object.freeze([1, 0]);
 export interface PanelOptions {
   feedUrl?: string;
   useProxy?: boolean;
-  showImage?: boolean;
 }
 
-export const defaultPanelOptions: PanelOptions = {
-  showImage: true,
-};
+export const defaultPanelOptions: PanelOptions = {};

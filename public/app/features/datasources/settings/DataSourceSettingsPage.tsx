@@ -200,19 +200,6 @@ export class DataSourceSettingsPage extends PureComponent<Props> {
     return <div>Page not found: {page}</div>;
   }
 
-  renderAlertDetails() {
-    const { testingStatus } = this.props;
-
-    return (
-      <>
-        {testingStatus?.details?.message}
-        {testingStatus?.details?.verboseMessage ? (
-          <details style={{ whiteSpace: 'pre-wrap' }}>{testingStatus?.details?.verboseMessage}</details>
-        ) : null}
-      </>
-    );
-  }
-
   renderSettings() {
     const { dataSourceMeta, setDataSourceName, setIsDefault, dataSource, plugin, testingStatus } = this.props;
 
@@ -246,17 +233,20 @@ export class DataSourceSettingsPage extends PureComponent<Props> {
           />
         )}
 
-        {testingStatus?.message && (
-          <div className="gf-form-group p-t-2">
+        <div className="gf-form-group p-t-2">
+          {testingStatus?.message && (
             <Alert
               severity={testingStatus.status === 'error' ? 'error' : 'success'}
               title={testingStatus.message}
               aria-label={selectors.pages.DataSource.alert}
             >
-              {testingStatus.details && this.renderAlertDetails()}
+              {testingStatus.details?.message ?? null}
+              {testingStatus.details?.verboseMessage ? (
+                <details style={{ whiteSpace: 'pre-wrap' }}>{testingStatus.details?.verboseMessage}</details>
+              ) : null}
             </Alert>
-          </div>
-        )}
+          )}
+        </div>
 
         <ButtonRow
           onSubmit={(event) => this.onSubmit(event)}

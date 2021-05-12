@@ -23,13 +23,22 @@ export class UnthemedTimeSeries extends React.Component<TimeSeriesProps> {
   };
 
   renderLegend = (config: UPlotConfigBuilder) => {
-    const { legend, frames } = this.props;
+    const { legend, onLegendClick, frames } = this.props;
 
     if (!config || (legend && legend.displayMode === LegendDisplayMode.Hidden)) {
-      return null;
+      return;
     }
 
-    return <PlotLegend data={frames} config={config} maxHeight="35%" maxWidth="60%" {...legend} />;
+    return (
+      <PlotLegend
+        data={frames}
+        config={config}
+        onLegendClick={onLegendClick}
+        maxHeight="35%"
+        maxWidth="60%"
+        {...legend}
+      />
+    );
   };
 
   render() {

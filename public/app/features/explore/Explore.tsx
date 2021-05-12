@@ -348,13 +348,11 @@ export class Explore extends React.PureComponent<ExploreProps, ExploreState> {
                     <ErrorBoundaryAlert>
                       {showPanels && (
                         <>
-                          {showMetrics && graphResult && (
-                            <ErrorBoundaryAlert>{this.renderGraphPanel(width)}</ErrorBoundaryAlert>
-                          )}
-                          {showTable && <ErrorBoundaryAlert>{this.renderTablePanel(width)}</ErrorBoundaryAlert>}
-                          {showLogs && <ErrorBoundaryAlert>{this.renderLogsPanel(width)}</ErrorBoundaryAlert>}
-                          {showNodeGraph && <ErrorBoundaryAlert>{this.renderNodeGraphPanel()}</ErrorBoundaryAlert>}
-                          {showTrace && <ErrorBoundaryAlert>{this.renderTraceViewPanel()}</ErrorBoundaryAlert>}
+                          {showMetrics && graphResult && this.renderGraphPanel(width)}
+                          {showTable && this.renderTablePanel(width)}
+                          {showLogs && this.renderLogsPanel(width)}
+                          {showNodeGraph && this.renderNodeGraphPanel()}
+                          {showTrace && this.renderTraceViewPanel()}
                         </>
                       )}
                       {showRichHistory && (

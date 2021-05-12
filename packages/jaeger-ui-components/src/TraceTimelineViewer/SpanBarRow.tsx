@@ -31,68 +31,83 @@ import { TNil } from '../types';
 import { TraceSpan } from '../types/trace';
 import { autoColor, createStyle, Theme, withTheme } from '../Theme';
 
-const spanBarClassName = 'spanBar';
-const spanBarLabelClassName = 'spanBarLabel';
-const nameWrapperClassName = 'nameWrapper';
-const nameWrapperMatchingFilterClassName = 'nameWrapperMatchingFilter';
-const viewClassName = 'jaegerView';
-const nameColumnClassName = 'nameColumn';
-
 const getStyles = createStyle((theme: Theme) => {
-  return {
-    nameWrapper: css`
-      label: nameWrapper;
-      background: ${autoColor(theme, '#f8f8f8')};
-      line-height: 27px;
-      overflow: hidden;
-      display: flex;
-      &:hover {
-        border-right: 1px solid ${autoColor(theme, '#bbb')};
-        float: left;
-        min-width: calc(100% + 1px);
-        overflow: visible;
-      }
-    `,
-    nameWrapperMatchingFilter: css`
-      label: nameWrapperMatchingFilter;
-      background-color: ${autoColor(theme, '#fffce4')};
-    `,
-    nameColumn: css`
-      label: nameColumn;
-      position: relative;
-      white-space: nowrap;
+  const spanBar = css`
+    label: spanBar;
+  `;
+  const spanBarLabel = css`
+    label: spanBarLabel;
+  `;
+  const nameWrapper = css`
+    label: nameWrapper;
+    background: ${autoColor(theme, '#f8f8f8')};
+    line-height: 27px;
+    overflow: hidden;
+    display: flex;
+    &:hover {
+      border-right: 1px solid ${autoColor(theme, '#bbb')};
+      float: left;
+      min-width: calc(100% + 1px);
+      overflow: visible;
+    }
+  `;
+
+  const nameWrapperMatchingFilter = css`
+    label: nameWrapperMatchingFilter;
+    background-color: ${autoColor(theme, '#fffce4')};
+  `;
+
+  const endpointName = css`
+    label: endpointName;
+    color: ${autoColor(theme, '#808080')};
+  `;
+
+  const view = css`
+    label: view;
+    position: relative;
+  `;
+
+  const viewExpanded = css`
+    label: viewExpanded;
+    background: ${autoColor(theme, '#f8f8f8')};
+    outline: 1px solid ${autoColor(theme, '#ddd')};
+  `;
+
+  const viewExpandedAndMatchingFilter = css`
+    label: viewExpandedAndMatchingFilter;
+    background: ${autoColor(theme, '#fff3d7')};
+    outline: 1px solid ${autoColor(theme, '#ddd')};
+  `;
+
+  const nameColumn = css`
+    label: nameColumn;
+    position: relative;
+    white-space: nowrap;
+    z-index: 1;
+    &:hover {
       z-index: 1;
-      &:hover {
-        z-index: 1;
-      }
-    `,
-    endpointName: css`
-      label: endpointName;
-      color: ${autoColor(theme, '#808080')};
-    `,
-    view: css`
-      label: view;
-      position: relative;
-    `,
-    viewExpanded: css`
-      label: viewExpanded;
-      background: ${autoColor(theme, '#f8f8f8')};
-      outline: 1px solid ${autoColor(theme, '#ddd')};
-    `,
-    viewExpandedAndMatchingFilter: css`
-      label: viewExpandedAndMatchingFilter;
-      background: ${autoColor(theme, '#fff3d7')};
-      outline: 1px solid ${autoColor(theme, '#ddd')};
-    `,
+    }
+  `;
+
+  return {
+    spanBar,
+    spanBarLabel,
+    nameWrapper,
+    nameWrapperMatchingFilter,
+    nameColumn,
+    endpointName,
+    view,
+    viewExpanded,
+    viewExpandedAndMatchingFilter,
     row: css`
       label: row;
-      &:hover .${spanBarClassName} {
+      &:hover .${spanBar} {
         opacity: 1;
       }
-      &:hover .${spanBarLabelClassName} {
+      &:hover .${spanBarLabel} {
         color: ${autoColor(theme, '#000')};
       }
-      &:hover .${nameWrapperClassName} {
+      &:hover .${nameWrapper} {
         background: #f8f8f8;
         background: linear-gradient(
           90deg,
@@ -101,14 +116,14 @@ const getStyles = createStyle((theme: Theme) => {
           ${autoColor(theme, '#eee')}
         );
       }
-      &:hover .${viewClassName} {
+      &:hover .${view} {
         background-color: ${autoColor(theme, '#f5f5f5')};
         outline: 1px solid ${autoColor(theme, '#ddd')};
       }
     `,
     rowClippingLeft: css`
       label: rowClippingLeft;
-      & .${nameColumnClassName}::before {
+      & .${nameColumn}::before {
         content: ' ';
         height: 100%;
         position: absolute;
@@ -124,7 +139,7 @@ const getStyles = createStyle((theme: Theme) => {
     `,
     rowClippingRight: css`
       label: rowClippingRight;
-      & .${viewClassName}::before {
+      & .${view}::before {
         content: ' ';
         height: 100%;
         position: absolute;
@@ -140,27 +155,27 @@ const getStyles = createStyle((theme: Theme) => {
     `,
     rowExpanded: css`
       label: rowExpanded;
-      & .${spanBarClassName} {
+      & .${spanBar} {
         opacity: 1;
       }
-      & .${spanBarLabelClassName} {
+      & .${spanBarLabel} {
         color: ${autoColor(theme, '#000')};
       }
-      & .${nameWrapperClassName}, &:hover .${nameWrapperClassName} {
+      & .${nameWrapper}, &:hover .${nameWrapper} {
         background: ${autoColor(theme, '#f0f0f0')};
         box-shadow: 0 1px 0 ${autoColor(theme, '#ddd')};
       }
-      & .${nameWrapperMatchingFilterClassName} {
+      & .${nameWrapperMatchingFilter} {
         background: ${autoColor(theme, '#fff3d7')};
       }
-      &:hover .${viewClassName} {
+      &:hover .${view} {
         background: ${autoColor(theme, '#eee')};
       }
     `,
     rowMatchingFilter: css`
       label: rowMatchingFilter;
       background-color: ${autoColor(theme, '#fffce4')};
-      &:hover .${nameWrapperClassName} {
+      &:hover .${nameWrapper} {
         background: linear-gradient(
           90deg,
           ${autoColor(theme, '#fff5e1')},
@@ -168,7 +183,7 @@ const getStyles = createStyle((theme: Theme) => {
           ${autoColor(theme, '#ffe6c9')}
         );
       }
-      &:hover .${viewClassName} {
+      &:hover .${view} {
         background-color: ${autoColor(theme, '#fff3d7')};
         outline: 1px solid ${autoColor(theme, '#ddd')};
       }
@@ -176,7 +191,7 @@ const getStyles = createStyle((theme: Theme) => {
 
     rowExpandedAndMatchingFilter: css`
       label: rowExpandedAndMatchingFilter;
-      &:hover .${viewClassName} {
+      &:hover .${view} {
         background: ${autoColor(theme, '#ffeccf')};
       }
     `,
@@ -215,7 +230,7 @@ const getStyles = createStyle((theme: Theme) => {
       &:focus {
         text-decoration: none;
       }
-      &:hover > small {
+      &:hover > .${endpointName} {
         color: ${autoColor(theme, '#000')};
       }
     `,
@@ -383,13 +398,8 @@ export class UnthemedSpanBarRow extends React.PureComponent<SpanBarRowProps> {
           className
         )}
       >
-        <TimelineRow.Cell className={cx(styles.nameColumn, nameColumnClassName)} width={columnDivision}>
-          <div
-            className={cx(styles.nameWrapper, nameWrapperClassName, {
-              [styles.nameWrapperMatchingFilter]: isMatchingFilter,
-              nameWrapperMatchingFilter: isMatchingFilter,
-            })}
-          >
+        <TimelineRow.Cell className={styles.nameColumn} width={columnDivision}>
+          <div className={cx(styles.nameWrapper, { [styles.nameWrapperMatchingFilter]: isMatchingFilter })}>
             <SpanTreeOffset
               childrenVisible={isChildrenExpanded}
               span={span}
@@ -480,7 +490,7 @@ export class UnthemedSpanBarRow extends React.PureComponent<SpanBarRowProps> {
           </div>
         </TimelineRow.Cell>
         <TimelineRow.Cell
-          className={cx(styles.view, viewClassName, {
+          className={cx(styles.view, {
             [styles.viewExpanded]: isDetailExpanded,
             [styles.viewExpandedAndMatchingFilter]: isMatchingFilter && isDetailExpanded,
           })}
@@ -501,8 +511,8 @@ export class UnthemedSpanBarRow extends React.PureComponent<SpanBarRowProps> {
             longLabel={longLabel}
             traceStartTime={traceStartTime}
             span={span}
-            labelClassName={`${spanBarLabelClassName} ${hintClassName}`}
-            className={spanBarClassName}
+            labelClassName={`${styles.spanBarLabel} ${hintClassName}`}
+            className={styles.spanBar}
           />
         </TimelineRow.Cell>
       </TimelineRow>

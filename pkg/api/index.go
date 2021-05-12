@@ -168,12 +168,14 @@ func (hs *HTTPServer) getNavTree(c *models.ReqContext, hasEditPerm bool) ([]*dto
 			Icon: "camera",
 		})
 
-		dashboardChildNavs = append(dashboardChildNavs, &dtos.NavLink{
-			Text: "Library panels",
-			Id:   "library-panels",
-			Url:  hs.Cfg.AppSubURL + "/library-panels",
-			Icon: "library-panel",
-		})
+		if hs.Cfg.IsPanelLibraryEnabled() {
+			dashboardChildNavs = append(dashboardChildNavs, &dtos.NavLink{
+				Text: "Library panels",
+				Id:   "library-panels",
+				Url:  hs.Cfg.AppSubURL + "/library-panels",
+				Icon: "library-panel",
+			})
+		}
 	}
 
 	navTree = append(navTree, &dtos.NavLink{
@@ -321,7 +323,7 @@ func (hs *HTTPServer) getNavTree(c *models.ReqContext, hasEditPerm bool) ([]*dto
 			HideFromTabs: true,
 			Id:           "admin",
 			Icon:         "shield",
-			Url:          adminNavLinks[0].Url,
+			Url:          hs.Cfg.AppSubURL + "/admin/users",
 			SortWeight:   dtos.WeightAdmin,
 			Children:     adminNavLinks,
 		})

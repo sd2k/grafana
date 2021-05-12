@@ -33,8 +33,7 @@ load(
     'publish_packages_step',
     'notify_pipeline',
     'integration_test_services',
-    'upload_cdn',
-    'validate_scuemata'
+    'upload_cdn'
 )
 
 ver_mode = 'main'
@@ -53,7 +52,6 @@ def get_steps(edition, is_downstream=False):
         build_backend_step(edition=edition, ver_mode=ver_mode, is_downstream=is_downstream),
         build_frontend_step(edition=edition, ver_mode=ver_mode, is_downstream=is_downstream),
         build_plugins_step(edition=edition, sign=True),
-        validate_scuemata(),
     ]
 
     # Have to insert Enterprise2 steps before they're depended on (in the gen-version step)

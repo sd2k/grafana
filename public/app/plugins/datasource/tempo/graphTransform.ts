@@ -96,8 +96,7 @@ function convertTraceToGraph(data: DataFrame): { nodes: Node[]; edges: Edge[] } 
       [Fields.color]: selfDuration / traceDuration,
     });
 
-    // Sometimes some span can be missing. Don't add edges for those.
-    if (row.parentSpanID && spanMap[row.parentSpanID].span) {
+    if (row.parentSpanID) {
       edges.push({
         [Fields.id]: row.parentSpanID + '--' + row.spanID,
         [Fields.target]: row.spanID,
@@ -137,8 +136,7 @@ function findTraceDuration(view: DataFrameView<Row>): number {
 }
 
 /**
- * Returns a map of the spans with children array for easier processing. It will also contain empty spans in case
- * span is missing but other spans are it's children.
+ * Returns a map of the spans with children array for easier processing.
  */
 function makeSpanMap(view: DataFrameView<Row>): { [id: string]: { span: Row; children: string[] } } {
   const spanMap: { [id: string]: { span?: Row; children: string[] } } = {};

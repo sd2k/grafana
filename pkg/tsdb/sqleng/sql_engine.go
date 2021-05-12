@@ -253,8 +253,8 @@ func (e *dataPlugin) executeQuery(query plugins.DataSubQuery, wg *sync.WaitGroup
 	}
 
 	// Convert row.Rows to dataframe
-	stringConverters := e.queryResultTransformer.GetConverterList()
-	frame, err := sqlutil.FrameFromRows(rows.Rows, rowLimit, sqlutil.ToConverters(stringConverters...)...)
+	myCs := e.queryResultTransformer.GetConverterList()
+	frame, _, err := sqlutil.FrameFromRows(rows.Rows, rowLimit, myCs...)
 	if err != nil {
 		errAppendDebug("convert frame from rows error", err)
 		return

@@ -16,7 +16,6 @@ import (
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/services/alerting"
 	"github.com/grafana/grafana/pkg/services/dashboards"
-	"github.com/grafana/grafana/pkg/services/libraryelements"
 	"github.com/grafana/grafana/pkg/services/live"
 	"github.com/grafana/grafana/pkg/services/provisioning"
 	"github.com/grafana/grafana/pkg/services/quota"
@@ -173,11 +172,7 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 				"/api/dashboards/db/:slug", role, func(sc *scenarioContext) {
 					state := setUp()
 
-					callDeleteDashboardBySlug(sc, &HTTPServer{
-						Cfg:                   setting.NewCfg(),
-						LibraryPanelService:   &mockLibraryPanelService{},
-						LibraryElementService: &mockLibraryElementService{},
-					})
+					callDeleteDashboardBySlug(sc, &HTTPServer{Cfg: setting.NewCfg()})
 					assert.Equal(t, 403, sc.resp.Code)
 
 					assert.Equal(t, "child-dash", state.dashQueries[0].Slug)
@@ -187,11 +182,7 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 				"/api/dashboards/uid/:uid", role, func(sc *scenarioContext) {
 					state := setUp()
 
-					callDeleteDashboardBySlug(sc, &HTTPServer{
-						Cfg:                   setting.NewCfg(),
-						LibraryPanelService:   &mockLibraryPanelService{},
-						LibraryElementService: &mockLibraryElementService{},
-					})
+					callDeleteDashboardByUID(sc, &HTTPServer{Cfg: setting.NewCfg()})
 					assert.Equal(t, 403, sc.resp.Code)
 
 					assert.Equal(t, "abcdefghi", state.dashQueries[0].Uid)
@@ -246,11 +237,7 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 				"/api/dashboards/db/:slug", role, func(sc *scenarioContext) {
 					state := setUp()
 
-					callDeleteDashboardBySlug(sc, &HTTPServer{
-						Cfg:                   setting.NewCfg(),
-						LibraryPanelService:   &mockLibraryPanelService{},
-						LibraryElementService: &mockLibraryElementService{},
-					})
+					callDeleteDashboardBySlug(sc, &HTTPServer{Cfg: setting.NewCfg()})
 					assert.Equal(t, 200, sc.resp.Code)
 					assert.Equal(t, "child-dash", state.dashQueries[0].Slug)
 				})
@@ -259,11 +246,7 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 				"/api/dashboards/uid/:uid", role, func(sc *scenarioContext) {
 					state := setUp()
 
-					callDeleteDashboardBySlug(sc, &HTTPServer{
-						Cfg:                   setting.NewCfg(),
-						LibraryPanelService:   &mockLibraryPanelService{},
-						LibraryElementService: &mockLibraryElementService{},
-					})
+					callDeleteDashboardByUID(sc, &HTTPServer{Cfg: setting.NewCfg()})
 					assert.Equal(t, 200, sc.resp.Code)
 					assert.Equal(t, "abcdefghi", state.dashQueries[0].Uid)
 				})
@@ -288,10 +271,8 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 
 	t.Run("Given a dashboard with a parent folder which has an ACL", func(t *testing.T) {
 		hs := &HTTPServer{
-			Cfg:                   setting.NewCfg(),
-			Live:                  newTestLive(t),
-			LibraryPanelService:   &mockLibraryPanelService{},
-			LibraryElementService: &mockLibraryElementService{},
+			Cfg:  setting.NewCfg(),
+			Live: newTestLive(t),
 		}
 
 		setUp := func() *testState {
@@ -1050,11 +1031,7 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 			"/api/dashboards/db/:slug", models.ROLE_EDITOR, func(sc *scenarioContext) {
 				setUp()
 
-				callDeleteDashboardBySlug(sc, &HTTPServer{
-					Cfg:                   setting.NewCfg(),
-					LibraryPanelService:   &mockLibraryPanelService{},
-					LibraryElementService: &mockLibraryElementService{},
-				})
+				callDeleteDashboardBySlug(sc, &HTTPServer{Cfg: setting.NewCfg()})
 
 				assert.Equal(t, 400, sc.resp.Code)
 				result := sc.ToJSON()
@@ -1064,11 +1041,7 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 		loggedInUserScenarioWithRole(t, "When calling DELETE on", "DELETE", "/api/dashboards/db/abcdefghi", "/api/dashboards/db/:uid", models.ROLE_EDITOR, func(sc *scenarioContext) {
 			setUp()
 
-			callDeleteDashboardBySlug(sc, &HTTPServer{
-				Cfg:                   setting.NewCfg(),
-				LibraryPanelService:   &mockLibraryPanelService{},
-				LibraryElementService: &mockLibraryElementService{},
-			})
+			callDeleteDashboardByUID(sc, &HTTPServer{Cfg: setting.NewCfg()})
 
 			assert.Equal(t, 400, sc.resp.Code)
 			result := sc.ToJSON()
@@ -1100,10 +1073,8 @@ func TestDashboardAPIEndpoint(t *testing.T) {
 			}
 
 			hs := &HTTPServer{
-				Cfg:                   setting.NewCfg(),
-				ProvisioningService:   mock,
-				LibraryPanelService:   &mockLibraryPanelService{},
-				LibraryElementService: &mockLibraryElementService{},
+				Cfg:                 setting.NewCfg(),
+				ProvisioningService: mock,
 			}
 			callGetDashboard(sc, hs)
 
@@ -1124,16 +1095,10 @@ func getDashboardShouldReturn200WithConfig(sc *scenarioContext, provisioningServ
 		provisioningService = provisioning.NewProvisioningServiceMock()
 	}
 
-	libraryPanelsService := mockLibraryPanelService{}
-	libraryElementsService := mockLibraryElementService{}
-
 	hs := &HTTPServer{
-		Cfg:                   setting.NewCfg(),
-		LibraryPanelService:   &libraryPanelsService,
-		LibraryElementService: &libraryElementsService,
-		ProvisioningService:   provisioningService,
+		Cfg:                 setting.NewCfg(),
+		ProvisioningService: provisioningService,
 	}
-
 	callGetDashboard(sc, hs)
 
 	require.Equal(sc.t, 200, sc.resp.Code)
@@ -1220,9 +1185,7 @@ func postDashboardScenario(t *testing.T, desc string, url string, routePattern s
 			QuotaService: &quota.QuotaService{
 				Cfg: cfg,
 			},
-			PluginManager:         &fakePluginManager{},
-			LibraryPanelService:   &mockLibraryPanelService{},
-			LibraryElementService: &mockLibraryElementService{},
+			PluginManager: &fakePluginManager{},
 		}
 
 		sc := setupScenarioContext(t, url)
@@ -1279,13 +1242,11 @@ func restoreDashboardVersionScenario(t *testing.T, desc string, url string, rout
 
 		cfg := setting.NewCfg()
 		hs := HTTPServer{
-			Cfg:                   cfg,
-			Bus:                   bus.GetBus(),
-			ProvisioningService:   provisioning.NewProvisioningServiceMock(),
-			Live:                  newTestLive(t),
-			QuotaService:          &quota.QuotaService{Cfg: cfg},
-			LibraryPanelService:   &mockLibraryPanelService{},
-			LibraryElementService: &mockLibraryElementService{},
+			Cfg:                 cfg,
+			Bus:                 bus.GetBus(),
+			ProvisioningService: provisioning.NewProvisioningServiceMock(),
+			Live:                newTestLive(t),
+			QuotaService:        &quota.QuotaService{Cfg: cfg},
 		}
 
 		sc := setupScenarioContext(t, url)
@@ -1331,46 +1292,4 @@ type mockDashboardProvisioningService struct {
 func (s mockDashboardProvisioningService) GetProvisionedDashboardDataByDashboardID(dashboardID int64) (
 	*models.DashboardProvisioning, error) {
 	return nil, nil
-}
-
-type mockLibraryPanelService struct {
-}
-
-func (m *mockLibraryPanelService) LoadLibraryPanelsForDashboard(c *models.ReqContext, dash *models.Dashboard) error {
-	return nil
-}
-
-func (m *mockLibraryPanelService) CleanLibraryPanelsForDashboard(dash *models.Dashboard) error {
-	return nil
-}
-
-func (m *mockLibraryPanelService) ConnectLibraryPanelsForDashboard(c *models.ReqContext, dash *models.Dashboard) error {
-	return nil
-}
-
-type mockLibraryElementService struct {
-}
-
-func (l *mockLibraryElementService) CreateElement(c *models.ReqContext, cmd libraryelements.CreateLibraryElementCommand) (libraryelements.LibraryElementDTO, error) {
-	return libraryelements.LibraryElementDTO{}, nil
-}
-
-// GetElementsForDashboard gets all connected elements for a specific dashboard.
-func (l *mockLibraryElementService) GetElementsForDashboard(c *models.ReqContext, dashboardID int64) (map[string]libraryelements.LibraryElementDTO, error) {
-	return map[string]libraryelements.LibraryElementDTO{}, nil
-}
-
-// ConnectElementsToDashboard connects elements to a specific dashboard.
-func (l *mockLibraryElementService) ConnectElementsToDashboard(c *models.ReqContext, elementUIDs []string, dashboardID int64) error {
-	return nil
-}
-
-// DisconnectElementsFromDashboard disconnects elements from a specific dashboard.
-func (l *mockLibraryElementService) DisconnectElementsFromDashboard(c *models.ReqContext, dashboardID int64) error {
-	return nil
-}
-
-// DeleteLibraryElementsInFolder deletes all elements for a specific folder.
-func (l *mockLibraryElementService) DeleteLibraryElementsInFolder(c *models.ReqContext, folderUID string) error {
-	return nil
 }

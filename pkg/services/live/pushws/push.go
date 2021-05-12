@@ -152,20 +152,13 @@ func (s *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	user, ok := livecontext.GetContextSignedUser(r.Context())
-	if !ok {
-		logger.Error("No user found in context")
-		rw.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	for {
 		_, body, err := conn.ReadMessage()
 		if err != nil {
 			break
 		}
 
-		stream, err := s.managedStreamRunner.GetOrCreateStream(user.OrgId, streamID)
+		stream, err := s.managedStreamRunner.GetOrCreateStream(streamID)
 		if err != nil {
 			logger.Error("Error getting stream", "error", err)
 			continue
@@ -191,7 +184,7 @@ func (s *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		}
 
 		for _, mf := range metricFrames {
-			err := stream.Push(user.OrgId, mf.Key(), mf.Frame(), unstableSchema)
+			err := stream.Push(mf.Key(), mf.Frame(), unstableSchema)
 			if err != nil {
 				return
 			}

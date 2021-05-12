@@ -139,7 +139,7 @@ func (h *DashboardHandler) OnPublish(ctx context.Context, user *models.SignedInU
 }
 
 // DashboardSaved should broadcast to the appropriate stream
-func (h *DashboardHandler) publish(orgID int64, event dashboardEvent) error {
+func (h *DashboardHandler) publish(event dashboardEvent) error {
 	msg, err := json.Marshal(event)
 	if err != nil {
 		return err
@@ -147,19 +147,19 @@ func (h *DashboardHandler) publish(orgID int64, event dashboardEvent) error {
 
 	// Only broadcast non-error events
 	if event.Error == "" {
-		err = h.Publisher(orgID, "grafana/dashboard/uid/"+event.UID, msg)
+		err = h.Publisher("grafana/dashboard/uid/"+event.UID, msg)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Send everything to the gitops channel
-	return h.Publisher(orgID, GITOPS_CHANNEL, msg)
+	return h.Publisher(GITOPS_CHANNEL, msg)
 }
 
 // DashboardSaved will broadcast to all connected dashboards
-func (h *DashboardHandler) DashboardSaved(orgID int64, user *models.UserDisplayDTO, message string, dashboard *models.Dashboard, err error) error {
-	if err != nil && !h.HasGitOpsObserver(orgID) {
+func (h *DashboardHandler) DashboardSaved(user *models.UserDisplayDTO, message string, dashboard *models.Dashboard, err error) error {
+	if err != nil && !h.HasGitOpsObserver() {
 		return nil // only broadcast if it was OK
 	}
 
@@ -175,12 +175,12 @@ func (h *DashboardHandler) DashboardSaved(orgID int64, user *models.UserDisplayD
 		msg.Error = err.Error()
 	}
 
-	return h.publish(orgID, msg)
+	return h.publish(msg)
 }
 
 // DashboardDeleted will broadcast to all connected dashboards
-func (h *DashboardHandler) DashboardDeleted(orgID int64, user *models.UserDisplayDTO, uid string) error {
-	return h.publish(orgID, dashboardEvent{
+func (h *DashboardHandler) DashboardDeleted(user *models.UserDisplayDTO, uid string) error {
+	return h.publish(dashboardEvent{
 		UID:    uid,
 		Action: ACTION_DELETED,
 		User:   user,
@@ -188,8 +188,8 @@ func (h *DashboardHandler) DashboardDeleted(orgID int64, user *models.UserDispla
 }
 
 // HasGitOpsObserver will return true if anyone is listening to the `gitops` channel
-func (h *DashboardHandler) HasGitOpsObserver(orgID int64) bool {
-	count, err := h.ClientCount(orgID, GITOPS_CHANNEL)
+func (h *DashboardHandler) HasGitOpsObserver() bool {
+	count, err := h.ClientCount(GITOPS_CHANNEL)
 	if err != nil {
 		logger.Error("error getting client count", "error", err)
 		return false

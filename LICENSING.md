@@ -19,5 +19,4 @@ packages/jaeger-ui-components/
 plugins-bundled/internal/input-datasource/
 packaging/
 grafana-mixin/
-cue/
 ```

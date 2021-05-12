@@ -1,12 +1,12 @@
 import { createAction } from '@reduxjs/toolkit';
 import { LoadingState } from '@grafana/data';
 
-import { LibraryElementDTO } from '../../types';
+import { LibraryPanelDTO } from '../../types';
 import { AnyAction } from 'redux';
 
 export interface LibraryPanelsViewState {
   loadingState: LoadingState;
-  libraryPanels: LibraryElementDTO[];
+  libraryPanels: LibraryPanelDTO[];
   totalCount: number;
   perPage: number;
   page: number;

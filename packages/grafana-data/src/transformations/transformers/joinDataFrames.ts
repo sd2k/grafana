@@ -216,7 +216,7 @@ export function outerJoinDataFrames(options: JoinOptions): DataFrame | undefined
 //--------------------------------------------------------------------------------
 
 // Copied from uplot
-export type AlignedData = [number[], ...Array<Array<number | null>>];
+type AlignedData = [number[], ...Array<Array<number | null>>];
 
 // nullModes
 const NULL_REMOVE = 0; // nulls are converted to undefined (e.g. for spanGaps: true)
@@ -245,7 +245,7 @@ function nullExpand(yVals: Array<number | null>, nullIdxs: number[], alignedLen:
 }
 
 // nullModes is a tables-matched array indicating how to treat nulls in each series
-export function join(tables: AlignedData[], nullModes?: number[][]) {
+function join(tables: AlignedData[], nullModes: number[][]) {
   const xVals = new Set<number>();
 
   for (let ti = 0; ti < tables.length; ti++) {

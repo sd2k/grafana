@@ -1,4 +1,4 @@
-import React, { PureComponent, createRef } from 'react';
+import React, { PureComponent } from 'react';
 import { css } from '@emotion/css';
 import { capitalize } from 'lodash';
 import memoizeOne from 'memoize-one';
@@ -29,6 +29,7 @@ import {
   InlineSwitch,
   withTheme,
   stylesFactory,
+  CustomScrollbar,
 } from '@grafana/ui';
 import store from 'app/core/store';
 import { dedupLogRows, filterLogLevels } from 'app/core/logs_model';
@@ -82,7 +83,6 @@ interface State {
 export class UnthemedLogs extends PureComponent<Props, State> {
   flipOrderTimer: NodeJS.Timeout;
   cancelFlippingTimer: NodeJS.Timeout;
-  topLogsRef = createRef<HTMLDivElement>();
 
   state: State = {
     showLabels: store.getBool(SETTINGS_KEYS.showLabels, false),
@@ -222,8 +222,6 @@ export class UnthemedLogs extends PureComponent<Props, State> {
     return filterLogLevels(logRows, new Set(hiddenLogLevels));
   });
 
-  scrollToTopLogs = () => this.topLogsRef.current?.scrollIntoView();
-
   render() {
     const {
       logRows,
@@ -282,7 +280,7 @@ export class UnthemedLogs extends PureComponent<Props, State> {
           showLines={false}
           onUpdateTimeRange={onChangeTime}
         />
-        <div className={styles.logOptions} ref={this.topLogsRef}>
+        <div className={styles.logOptions}>
           <InlineFieldRow>
             <InlineField label="Time" transparent>
               <InlineSwitch value={showTime} onChange={this.onChangeTime} transparent />
@@ -329,7 +327,7 @@ export class UnthemedLogs extends PureComponent<Props, State> {
           clearDetectedFields={this.clearDetectedFields}
         />
         <div className={styles.logsSection}>
-          <div className={styles.logRows}>
+          <CustomScrollbar autoHide>
             <LogRows
               logRows={logRows}
               deduplicatedRows={dedupedRows}
@@ -350,7 +348,7 @@ export class UnthemedLogs extends PureComponent<Props, State> {
               onClickShowDetectedField={this.showDetectedField}
               onClickHideDetectedField={this.hideDetectedField}
             />
-          </div>
+          </CustomScrollbar>
           <LogsNavigation
             logsSortOrder={logsSortOrder}
             visibleRange={visibleRange}
@@ -359,7 +357,6 @@ export class UnthemedLogs extends PureComponent<Props, State> {
             onChangeTime={onChangeTime}
             loading={loading}
             queries={queries}
-            scrollToTopLogs={this.scrollToTopLogs}
           />
         </div>
         {!loading && !hasData && !scanning && (
@@ -413,10 +410,7 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
     logsSection: css`
       display: flex;
       flex-direction: row;
-      justify-content: space-between;
-    `,
-    logRows: css`
-      overflow-x: scroll;
+      max-height: 95vh;
     `,
   };
 });

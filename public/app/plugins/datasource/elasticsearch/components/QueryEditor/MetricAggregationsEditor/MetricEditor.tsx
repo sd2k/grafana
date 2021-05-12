@@ -21,7 +21,6 @@ import {
   MetricAggregationType,
 } from './aggregations';
 import { useFields } from '../../../hooks/useFields';
-import { satisfies } from 'semver';
 
 const toOption = (metric: MetricAggregation) => ({
   label: metricAggregationConfig[metric.type].label,
@@ -40,7 +39,7 @@ const isBasicAggregation = (metric: MetricAggregation) => !metricAggregationConf
 
 const getTypeOptions = (
   previousMetrics: MetricAggregation[],
-  esVersion: string
+  esVersion: number
 ): Array<SelectableValue<MetricAggregationType>> => {
   // we'll include Pipeline Aggregations only if at least one previous metric is a "Basic" one
   const includePipelineAggregations = previousMetrics.some(isBasicAggregation);
@@ -48,7 +47,10 @@ const getTypeOptions = (
   return (
     Object.entries(metricAggregationConfig)
       // Only showing metrics type supported by the configured version of ES
-      .filter(([_, { versionRange = '*' }]) => satisfies(esVersion, versionRange))
+      .filter(([_, { minVersion = 0, maxVersion = esVersion }]) => {
+        // TODO: Double check this
+        return esVersion >= minVersion && esVersion <= maxVersion;
+      })
       // Filtering out Pipeline Aggregations if there's no basic metric selected before
       .filter(([_, config]) => includePipelineAggregations || !config.isPipelineAgg)
       .map(([key, { label }]) => ({

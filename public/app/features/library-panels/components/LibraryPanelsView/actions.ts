@@ -27,11 +27,11 @@ export function searchForLibraryPanels(args: SearchArgs): DispatchResult {
         page: args.page,
         excludeUid: args.currentPanelId,
         sortDirection: args.sortDirection,
-        typeFilter: args.panelFilter,
+        panelFilter: args.panelFilter,
         folderFilter: args.folderFilter,
       })
     ).pipe(
-      mergeMap(({ perPage, elements: libraryPanels, page, totalCount }) =>
+      mergeMap(({ perPage, libraryPanels, page, totalCount }) =>
         of(searchCompleted({ libraryPanels, page, perPage, totalCount }))
       ),
       catchError((err) => {

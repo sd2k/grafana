@@ -34,7 +34,7 @@ export const DEFAULT_PLOT_CONFIG: Partial<Options> = {
 };
 
 /** @internal */
-export function preparePlotData(frame: DataFrame): AlignedData {
+export function preparePlotData(frame: DataFrame, keepFieldTypes?: FieldType[]): AlignedData {
   const result: any[] = [];
   const stackingGroups: Map<string, number[]> = new Map();
   let seriesIndex = 0;
@@ -54,6 +54,10 @@ export function preparePlotData(frame: DataFrame): AlignedData {
       }
       result.push(f.values.toArray());
       seriesIndex++;
+      continue;
+    }
+
+    if (keepFieldTypes && keepFieldTypes.indexOf(f.type) < 0) {
       continue;
     }
 

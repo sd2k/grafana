@@ -112,9 +112,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -149,9 +147,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -186,9 +182,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -223,9 +217,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -252,7 +244,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
           ],
           "refresh": undefined,
           "revision": undefined,
-          "schemaVersion": 30,
+          "schemaVersion": 29,
           "snapshot": undefined,
           "style": "dark",
           "tags": Array [],
@@ -285,9 +277,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
             },
           },
           "fieldConfig": Object {
-            "defaults": Object {
-              "mappings": undefined,
-            },
+            "defaults": Object {},
             "overrides": Array [],
           },
           "gridPos": Object {
@@ -383,9 +373,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -420,9 +408,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -457,9 +443,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -494,9 +478,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -523,7 +505,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
           ],
           "refresh": undefined,
           "revision": undefined,
-          "schemaVersion": 30,
+          "schemaVersion": 29,
           "snapshot": undefined,
           "style": "dark",
           "tags": Array [],
@@ -556,9 +538,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
             },
           },
           "fieldConfig": Object {
-            "defaults": Object {
-              "mappings": undefined,
-            },
+            "defaults": Object {},
             "overrides": Array [],
           },
           "gridPos": Object {
@@ -654,9 +634,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -691,9 +669,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -728,9 +704,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -765,9 +739,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -794,7 +766,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
           ],
           "refresh": undefined,
           "revision": undefined,
-          "schemaVersion": 30,
+          "schemaVersion": 29,
           "snapshot": undefined,
           "style": "dark",
           "tags": Array [],
@@ -827,9 +799,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
             },
           },
           "fieldConfig": Object {
-            "defaults": Object {
-              "mappings": undefined,
-            },
+            "defaults": Object {},
             "overrides": Array [],
           },
           "gridPos": Object {
@@ -925,9 +895,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -962,9 +930,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -999,9 +965,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -1036,9 +1000,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
                 },
               },
               "fieldConfig": Object {
-                "defaults": Object {
-                  "mappings": undefined,
-                },
+                "defaults": Object {},
                 "overrides": Array [],
               },
               "gridPos": Object {
@@ -1065,7 +1027,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
           ],
           "refresh": undefined,
           "revision": undefined,
-          "schemaVersion": 30,
+          "schemaVersion": 29,
           "snapshot": undefined,
           "style": "dark",
           "tags": Array [],
@@ -1098,9 +1060,7 @@ exports[`DashboardGrid Can render dashboard grid Should render 1`] = `
             },
           },
           "fieldConfig": Object {
-            "defaults": Object {
-              "mappings": undefined,
-            },
+            "defaults": Object {},
             "overrides": Array [],
           },
           "gridPos": Object {

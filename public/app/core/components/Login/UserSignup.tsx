@@ -17,9 +17,8 @@ export const UserSignup: FC<{}> = () => {
         `}
         href={href}
         variant="secondary"
-        fill="outline"
       >
-        Sign up
+        Sign Up
       </LinkButton>
     </VerticalGroup>
   );

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/grafana/grafana/pkg/infra/log"
-	"github.com/grafana/grafana/pkg/services/live/orgchannel"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
@@ -254,11 +253,11 @@ type submitResponse struct {
 
 // SubmitStream submits stream handler in Manager to manage.
 // The stream will be opened and kept till channel has active subscribers.
-func (s *Manager) SubmitStream(ctx context.Context, orgID int64, channel string, path string, pCtx backend.PluginContext, streamRunner StreamRunner) (*submitResult, error) {
+func (s *Manager) SubmitStream(ctx context.Context, channel string, path string, pCtx backend.PluginContext, streamRunner StreamRunner) (*submitResult, error) {
 	req := submitRequest{
 		responseCh: make(chan submitResponse, 1),
 		streamRequest: streamRequest{
-			Channel:       orgchannel.PrependOrgID(orgID, channel),
+			Channel:       channel,
 			Path:          path,
 			PluginContext: pCtx,
 			StreamRunner:  streamRunner,

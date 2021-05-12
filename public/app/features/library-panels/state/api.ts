@@ -1,10 +1,4 @@
-import {
-  LibraryElementConnectionDTO,
-  LibraryElementDTO,
-  LibraryElementKind,
-  LibraryElementsSearchResult,
-  PanelModelWithLibraryPanel,
-} from '../types';
+import { LibraryPanelDTO, LibraryPanelSearchResult, PanelModelWithLibraryPanel } from '../types';
 import { DashboardSearchHit } from '../../search/types';
 import { getBackendSrv } from '../../../core/services/backend_srv';
 
@@ -14,7 +8,7 @@ export interface GetLibraryPanelsOptions {
   page?: number;
   excludeUid?: string;
   sortDirection?: string;
-  typeFilter?: string[];
+  panelFilter?: string[];
   folderFilter?: string[];
 }
 
@@ -24,39 +18,35 @@ export async function getLibraryPanels({
   page = 1,
   excludeUid = '',
   sortDirection = '',
-  typeFilter = [],
+  panelFilter = [],
   folderFilter = [],
-}: GetLibraryPanelsOptions = {}): Promise<LibraryElementsSearchResult> {
+}: GetLibraryPanelsOptions = {}): Promise<LibraryPanelSearchResult> {
   const params = new URLSearchParams();
   params.append('searchString', searchString);
   params.append('sortDirection', sortDirection);
-  params.append('typeFilter', typeFilter.join(','));
+  params.append('panelFilter', panelFilter.join(','));
   params.append('folderFilter', folderFilter.join(','));
   params.append('excludeUid', excludeUid);
   params.append('perPage', perPage.toString(10));
   params.append('page', page.toString(10));
-  params.append('kind', LibraryElementKind.Panel.toString(10));
 
-  const { result } = await getBackendSrv().get<{ result: LibraryElementsSearchResult }>(
-    `/api/library-elements?${params.toString()}`
-  );
+  const { result } = await getBackendSrv().get(`/api/library-panels?${params.toString()}`);
   return result;
 }
 
-export async function getLibraryPanel(uid: string): Promise<LibraryElementDTO> {
-  const { result } = await getBackendSrv().get(`/api/library-elements/${uid}`);
+export async function getLibraryPanel(uid: string): Promise<LibraryPanelDTO> {
+  const { result } = await getBackendSrv().get(`/api/library-panels/${uid}`);
   return result;
 }
 
 export async function addLibraryPanel(
   panelSaveModel: PanelModelWithLibraryPanel,
   folderId: number
-): Promise<LibraryElementDTO> {
-  const { result } = await getBackendSrv().post(`/api/library-elements`, {
+): Promise<LibraryPanelDTO> {
+  const { result } = await getBackendSrv().post(`/api/library-panels`, {
     folderId,
     name: panelSaveModel.title,
     model: panelSaveModel,
-    kind: LibraryElementKind.Panel,
   });
   return result;
 }
@@ -64,36 +54,31 @@ export async function addLibraryPanel(
 export async function updateLibraryPanel(
   panelSaveModel: PanelModelWithLibraryPanel,
   folderId: number
-): Promise<LibraryElementDTO> {
-  const { result } = await getBackendSrv().patch(`/api/library-elements/${panelSaveModel.libraryPanel.uid}`, {
+): Promise<LibraryPanelDTO> {
+  const { result } = await getBackendSrv().patch(`/api/library-panels/${panelSaveModel.libraryPanel.uid}`, {
     folderId,
     name: panelSaveModel.title,
     model: panelSaveModel,
     version: panelSaveModel.libraryPanel.version,
-    kind: LibraryElementKind.Panel,
   });
   return result;
 }
 
 export function deleteLibraryPanel(uid: string): Promise<{ message: string }> {
-  return getBackendSrv().delete(`/api/library-elements/${uid}`);
+  return getBackendSrv().delete(`/api/library-panels/${uid}`);
 }
 
-export async function getLibraryPanelConnectedDashboards(
-  libraryPanelUid: string
-): Promise<LibraryElementConnectionDTO[]> {
-  const { result } = await getBackendSrv().get<{ result: LibraryElementConnectionDTO[] }>(
-    `/api/library-elements/${libraryPanelUid}/connections`
-  );
+export async function getLibraryPanelConnectedDashboards(libraryPanelUid: string): Promise<number[]> {
+  const { result } = await getBackendSrv().get(`/api/library-panels/${libraryPanelUid}/dashboards`);
   return result;
 }
 
 export async function getConnectedDashboards(uid: string): Promise<DashboardSearchHit[]> {
-  const connections = await getLibraryPanelConnectedDashboards(uid);
-  if (connections.length === 0) {
+  const dashboardIds = await getLibraryPanelConnectedDashboards(uid);
+  if (dashboardIds.length === 0) {
     return [];
   }
 
-  const searchHits = await getBackendSrv().search({ dashboardIds: connections.map((c) => c.connectionId) });
+  const searchHits = await getBackendSrv().search({ dashboardIds });
   return searchHits;
 }

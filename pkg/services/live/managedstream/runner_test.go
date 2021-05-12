@@ -7,46 +7,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type testPublisher struct {
-	orgID int64
-	t     *testing.T
-}
-
-func (p *testPublisher) publish(orgID int64, _ string, _ []byte) error {
-	require.Equal(p.t, p.orgID, orgID)
+var noopPublisher = func(p string, b []byte) error {
 	return nil
 }
 
 func TestNewManagedStream(t *testing.T) {
-	publisher := &testPublisher{orgID: 1, t: t}
-	c := NewManagedStream("a", publisher.publish)
+	c := NewManagedStream("a", noopPublisher)
 	require.NotNil(t, c)
 }
 
 func TestManagedStream_GetLastPacket_UnstableSchema(t *testing.T) {
-	var orgID int64 = 1
-	publisher := &testPublisher{orgID: orgID, t: t}
-	c := NewManagedStream("a", publisher.publish)
-	_, ok := c.getLastPacket(orgID, "test")
+	c := NewManagedStream("a", noopPublisher)
+	_, ok := c.getLastPacket("test")
 	require.False(t, ok)
-	err := c.Push(orgID, "test", data.NewFrame("hello"), true)
+	err := c.Push("test", data.NewFrame("hello"), true)
 	require.NoError(t, err)
 
-	_, ok = c.getLastPacket(orgID, "test")
+	_, ok = c.getLastPacket("test")
 	require.NoError(t, err)
 	require.False(t, ok)
 }
 
 func TestManagedStream_GetLastPacket(t *testing.T) {
-	var orgID int64 = 1
-	publisher := &testPublisher{orgID: orgID, t: t}
-	c := NewManagedStream("a", publisher.publish)
-	_, ok := c.getLastPacket(orgID, "test")
+	c := NewManagedStream("a", noopPublisher)
+	_, ok := c.getLastPacket("test")
 	require.False(t, ok)
-	err := c.Push(orgID, "test", data.NewFrame("hello"), false)
+	err := c.Push("test", data.NewFrame("hello"), false)
 	require.NoError(t, err)
 
-	s, ok := c.getLastPacket(orgID, "test")
+	s, ok := c.getLastPacket("test")
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Equal(t, `{"schema":{"name":"hello","fields":[]},"data":{"values":[]}}`, string(s))

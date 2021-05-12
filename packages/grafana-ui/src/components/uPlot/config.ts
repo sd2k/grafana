@@ -1,5 +1,4 @@
 import { SelectableValue } from '@grafana/data';
-import { ScaleDistribution } from './models.gen';
 
 /**
  * @alpha
@@ -53,10 +52,10 @@ export enum BarAlignment {
 /**
  * @alpha
  */
-export enum BarValueVisibility {
-  Auto = 'auto',
-  Never = 'never',
-  Always = 'always',
+export enum ScaleDistribution {
+  Linear = 'linear',
+  Logarithmic = 'log',
+  Ordinal = 'ordinal',
 }
 
 /**

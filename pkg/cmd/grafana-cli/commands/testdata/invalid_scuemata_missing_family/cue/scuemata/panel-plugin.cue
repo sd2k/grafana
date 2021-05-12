@@ -9,7 +9,6 @@ package scuemata
 #PanelSchema: {
     PanelOptions: {...}
     PanelFieldConfig: {...}
-    ...
 }
 
 // A lineage of panel schema

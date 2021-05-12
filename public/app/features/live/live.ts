@@ -51,18 +51,15 @@ export class CentrifugeSrv implements GrafanaLiveSrv {
   readonly connectionState: BehaviorSubject<boolean>;
   readonly connectionBlocker: Promise<void>;
   readonly scopes: Record<LiveChannelScope, GrafanaLiveScope>;
-  private orgId: number;
 
   constructor() {
-    const baseURL = window.location.origin.replace('http', 'ws');
-    const liveUrl = `${baseURL}/${config.appSubUrl}api/live/ws`;
-    this.orgId = (window as any).grafanaBootData.user.orgId;
+    // build live url replacing scheme in appUrl.
+    const liveUrl = `${config.appUrl.replace('http', 'ws')}live/ws`;
     this.centrifuge = new Centrifuge(liveUrl, {
       debug: true,
     });
     this.centrifuge.setConnectData({
       sessionId,
-      orgId: this.orgId,
     });
     this.centrifuge.connect(); // do connection
     this.connectionState = new BehaviorSubject<boolean>(this.centrifuge.isConnected());
@@ -113,7 +110,7 @@ export class CentrifugeSrv implements GrafanaLiveSrv {
    * channel will be returned with an error state indicated in its status
    */
   getChannel<TMessage>(addr: LiveChannelAddress): CentrifugeLiveChannel<TMessage> {
-    const id = `${this.orgId}/${addr.scope}/${addr.namespace}/${addr.path}`;
+    const id = `${addr.scope}/${addr.namespace}/${addr.path}`;
     let channel = this.open.get(id);
     if (channel != null) {
       return channel;
@@ -326,7 +323,7 @@ export class CentrifugeSrv implements GrafanaLiveSrv {
    */
   publish(address: LiveChannelAddress, data: any): Promise<any> {
     return getBackendSrv().post(`api/live/publish`, {
-      channel: toLiveChannelId(address), // orgId is from user
+      channel: toLiveChannelId(address),
       data,
     });
   }

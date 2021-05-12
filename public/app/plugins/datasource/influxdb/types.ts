@@ -27,10 +27,7 @@ export interface InfluxSecureJsonData {
 
 export interface InfluxQueryPart {
   type: string;
-  params?: Array<string | number>;
-  // FIXME: `interval` does not seem to be used.
-  // check all the influxdb parts (query-generation etc.),
-  // if it is really so, and if yes, remove it
+  params?: string[];
   interval?: string;
 }
 
@@ -51,12 +48,9 @@ export interface InfluxQuery extends DataQuery {
   tags?: InfluxQueryTag[];
   groupBy?: InfluxQueryPart[];
   select?: InfluxQueryPart[][];
-  limit?: string | number;
-  slimit?: string | number;
+  limit?: string;
+  slimit?: string;
   tz?: string;
-  // NOTE: `fill` is not used in the query-editor anymore, and is removed
-  // if any change happens in the query-editor. the query-generation still
-  // supports it for now.
   fill?: string;
   rawQuery?: boolean;
   query?: string;

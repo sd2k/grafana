@@ -9,11 +9,11 @@ import { feedToDataFrame } from './utils';
 import { loadRSSFeed } from './rss';
 
 // Types
-import { PanelProps, DataFrameView, dateTimeFormat, GrafanaTheme2, textUtil } from '@grafana/data';
+import { PanelProps, DataFrameView, dateTimeFormat, GrafanaTheme, textUtil } from '@grafana/data';
 import { NewsItem } from './types';
 import { PanelOptions } from './models.gen';
 import { DEFAULT_FEED_URL, PROXY_PREFIX } from './constants';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 
 interface Props extends PanelProps<PanelOptions> {}
 
@@ -63,11 +63,8 @@ export class NewsPanel extends PureComponent<Props, State> {
   }
 
   render() {
-    const { width } = this.props;
-    const { showImage } = this.props.options;
     const { isError, news } = this.state;
-    const styles = getStyles(config.theme2);
-    const useWideLayout = width > 600;
+    const styles = getStyles(config.theme);
 
     if (isError) {
       return <div>Error Loading News</div>;
@@ -80,29 +77,17 @@ export class NewsPanel extends PureComponent<Props, State> {
       <CustomScrollbar autoHeightMin="100%" autoHeightMax="100%">
         {news.map((item, index) => {
           return (
-            <div key={index} className={cx(styles.item, useWideLayout && styles.itemWide)}>
-              {showImage && item.ogImage && (
-                <a
-                  href={textUtil.sanitizeUrl(item.link)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cx(styles.socialImage, useWideLayout && styles.socialImageWide)}
-                >
-                  <img src={item.ogImage} />
-                </a>
-              )}
-              <div className={styles.body}>
+            <div key={index} className={styles.item}>
+              <a
+                className={styles.link}
+                href={textUtil.sanitizeUrl(item.link)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className={styles.title}>{item.title}</div>
                 <div className={styles.date}>{dateTimeFormat(item.date, { format: 'MMM DD' })} </div>
-                <a
-                  className={styles.link}
-                  href={textUtil.sanitizeUrl(item.link)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <div className={styles.title}>{item.title}</div>
-                </a>
-                <div className={styles.content} dangerouslySetInnerHTML={{ __html: textUtil.sanitize(item.content) }} />
-              </div>
+              </a>
+              <div className={styles.content} dangerouslySetInnerHTML={{ __html: textUtil.sanitize(item.content) }} />
             </div>
           );
         })}
@@ -111,53 +96,29 @@ export class NewsPanel extends PureComponent<Props, State> {
   }
 }
 
-const getStyles = stylesFactory((theme: GrafanaTheme2) => ({
+const getStyles = stylesFactory((theme: GrafanaTheme) => ({
   container: css`
     height: 100%;
   `,
   item: css`
-    display: flex;
-    padding: ${theme.spacing(1)};
+    padding: ${theme.spacing.sm};
     position: relative;
     margin-bottom: 4px;
-    margin-right: ${theme.spacing(1)};
-    border-bottom: 2px solid ${theme.colors.border.weak};
-    background: ${theme.colors.background.primary};
-    flex-direction: column;
-  `,
-  itemWide: css`
-    flex-direction: row;
-  `,
-  body: css``,
-  socialImage: css`
-    display: flex;
-    align-items: center;
-    margin-bottom: ${theme.spacing(1)};
-    > img {
-      width: 100%;
-      border-radius: ${theme.shape.borderRadius(2)} ${theme.shape.borderRadius(2)} 0 0;
-    }
-  `,
-  socialImageWide: css`
-    margin-right: ${theme.spacing(2)};
-    margin-bottom: 0;
-    > img {
-      width: 250px;
-      border-radius: ${theme.shape.borderRadius()};
-    }
+    margin-right: ${theme.spacing.sm};
+    border-bottom: 2px solid ${theme.colors.border1};
   `,
   link: css`
-    color: ${theme.colors.text.link};
+    color: ${theme.colors.linkExternal};
 
     &:hover {
-      color: ${theme.colors.text.link};
+      color: ${theme.colors.linkExternal};
       text-decoration: underline;
     }
   `,
   title: css`
     max-width: calc(100% - 70px);
     font-size: 16px;
-    margin-bottom: ${theme.spacing(0.5)};
+    margin-bottom: ${theme.spacing.sm};
   `,
   content: css`
     p {
@@ -166,9 +127,15 @@ const getStyles = stylesFactory((theme: GrafanaTheme2) => ({
     }
   `,
   date: css`
-    margin-bottom: ${theme.spacing(0.5)};
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: ${theme.colors.panelBg};
+    width: 55px;
+    text-align: right;
+    padding: ${theme.spacing.xs};
     font-weight: 500;
     border-radius: 0 0 0 3px;
-    color: ${theme.colors.text.secondary};
+    color: ${theme.colors.textWeak};
   `,
 }));

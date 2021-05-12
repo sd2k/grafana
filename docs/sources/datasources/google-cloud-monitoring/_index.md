@@ -127,7 +127,7 @@ Resource metadata labels contain information to uniquely identify a resource in 
 
 There's no API for retrieving metadata labels, so you can't populate the group by list with the metadata labels that are available for the selected service and metric. However, the **Group By** field list comes with a pre-defined set of common system labels.
 
-User labels cannot be pre-defined, but it's possible to enter them manually in the **Group By** field. If a metadata label, user label or system label is included in the **Group By** segment, then you can create filters based on it and expand its value on the **Alias** field.
+User labels cannot be pre-defined, but you can enter them manually in the **Group By** field. If a metadata label, user label or system label is included in the **Group By** segment, then you can create filters based on it and expand its value on the **Alias** field.
 
 ##### Group by function
 

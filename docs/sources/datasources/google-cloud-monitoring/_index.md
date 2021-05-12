@@ -137,7 +137,7 @@ The process of alignment consists of collecting all data points received in a fi
 
 ##### Alignment function
 
-Describes how to bring the data points in each individual time series into equal periods of time. Within each interval (determined by the alignment period) and for each time series, the data points are aggregated into a single point. The value of that point is determined by the type of alignment function used. For more information about aligner, refer to [alignment metric selector](https://cloud.google.com/monitoring/charts/metrics-selector#alignment).
+Describes how to bring the data points in each individual time series into equal periods of time. Within each interval (determined by the alignment period) and for each time series, the data points are aggregated into a single point. The value of that point is determined by the type of alignment function used. For more information about alignment functions, refer to [alignment metric selector](https://cloud.google.com/monitoring/charts/metrics-selector#alignment).
 
 ##### Alignment period
 

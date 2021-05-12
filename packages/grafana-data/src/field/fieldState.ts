@@ -63,7 +63,18 @@ function calculateFieldDisplayName(field: Field, frame?: DataFrame, allFrames?: 
   }
 
   if (frame && field.config?.displayNameFromDS) {
-    return field.config.displayNameFromDS;
+    displayName = field.config.displayNameFromDS;
+  }
+
+  const displayNameRegexp = field.config?.custom?.displayNameRegexp;
+
+  if (displayNameRegexp && displayNameRegexp.from && displayNameRegexp.to) {
+    const from = new RegExp(displayNameRegexp.from, 'gm');
+    return displayName.replace(from, displayNameRegexp.to);
+  }
+
+  if (frame && field.config?.displayNameFromDS) {
+    return displayName;
   }
 
   // This is an ugly exception for time field

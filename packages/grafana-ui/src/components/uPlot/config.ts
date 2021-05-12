@@ -113,10 +113,19 @@ export interface BarConfig {
 /**
  * @alpha
  */
+export interface FillBelowToRegexConfig {
+  from: string; // regex with capture groups to fill from
+  to: string; // regex with replacement strings to fill to.
+}
+
+/**
+ * @alpha
+ */
 export interface FillConfig {
   fillColor?: string;
   fillOpacity?: number;
   fillBelowTo?: string; // name of the field
+  fillBelowToRegexp?: FillBelowToRegexConfig;
 }
 
 /**

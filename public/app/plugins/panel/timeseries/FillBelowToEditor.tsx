@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { FieldOverrideEditorProps, FieldType, getFieldDisplayName, SelectableValue } from '@grafana/data';
-import { Select } from '@grafana/ui';
+import { Input, Select } from '@grafana/ui';
 
 export const FillBellowToEditor: React.FC<FieldOverrideEditorProps<string, any>> = ({ value, context, onChange }) => {
   const names = useMemo(() => {
@@ -45,3 +45,23 @@ export const FillBellowToEditor: React.FC<FieldOverrideEditorProps<string, any>>
     />
   );
 };
+
+interface FillBelowToRegexpValue {
+  from?: string;
+  to?: string;
+}
+
+export const FillBelowToRegexpEditor: React.FC<FieldOverrideEditorProps<FillBelowToRegexpValue, any>> = ({
+  value,
+  context,
+  onChange,
+}) => (
+  <>
+    <Input
+      placeholder="From"
+      value={value?.from}
+      onChange={(v) => onChange({ ...value, from: v.currentTarget.value })}
+    />
+    <Input placeholder="To" value={value?.to} onChange={(v) => onChange({ ...value, to: v.currentTarget.value })} />
+  </>
+);

@@ -150,12 +150,22 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<{ sync: DashboardCursor
 
     let { fillOpacity } = customConfig;
 
-    if (customConfig.fillBelowTo) {
+    if (customConfig.fillBelowTo || customConfig.fillBelowToRegexp) {
       if (!indexByName) {
         indexByName = getNamesToFieldIndex(frame);
       }
-      const t = indexByName.get(getFieldDisplayName(field, frame));
-      const b = indexByName.get(customConfig.fillBelowTo);
+      const fn = getFieldDisplayName(field, frame);
+      const t = indexByName.get(fn);
+      let b = undefined;
+      if (customConfig.fillBelowTo) {
+        b = indexByName.get(customConfig.fillBelowTo);
+      } else if (customConfig.fillBelowToRegexp) {
+        const target = fn.replace(
+          new RegExp(customConfig.fillBelowToRegexp.from, 'gm'),
+          customConfig.fillBelowToRegexp.to
+        );
+        b = indexByName.get(target);
+      }
       if (isNumber(b) && isNumber(t)) {
         builder.addBand({
           series: [t, b],

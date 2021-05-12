@@ -21,7 +21,7 @@ import {
   commonOptionsBuilder,
 } from '@grafana/ui';
 import { LineStyleEditor } from './LineStyleEditor';
-import { FillBellowToEditor } from './FillBelowToEditor';
+import { FillBellowToEditor, FillBelowToRegexpEditor } from './FillBelowToEditor';
 import { SpanNullsEditor } from './SpanNullsEditor';
 import { StackingEditor } from './StackingEditor';
 
@@ -127,6 +127,28 @@ export function getGraphFieldConfig(cfg: GraphFieldConfig): SetFieldConfigOption
           editor: FillBellowToEditor,
           override: FillBellowToEditor,
           process: stringOverrideProcessor,
+          hideFromDefaults: true,
+          shouldApply: (f) => true,
+        })
+        .addCustomEditor({
+          id: 'fillBelowToRegexp',
+          path: 'fillBelowToRegexp',
+          name: 'Fill below to (regexp)',
+          category: categoryStyles,
+          editor: FillBelowToRegexpEditor,
+          override: FillBelowToRegexpEditor,
+          process: identityOverrideProcessor,
+          hideFromDefaults: true,
+          shouldApply: (f) => true,
+        })
+        .addCustomEditor({
+          id: 'displayNameRegexp',
+          path: 'displayNameRegexp',
+          name: 'Display name (regexp)',
+          category: categoryStyles,
+          editor: FillBelowToRegexpEditor,
+          override: FillBelowToRegexpEditor,
+          process: identityOverrideProcessor,
           hideFromDefaults: true,
           shouldApply: (f) => true,
         })

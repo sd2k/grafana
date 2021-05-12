@@ -131,7 +131,7 @@ User labels cannot be pre-defined, but you can enter them manually in the **Grou
 
 ##### Group by function
 
-The grouping function is used to combine the time series in the group into a single time series.
+Use the grouping function to combine the time series in the group into a single time series.
 
 #### Alignment
 
